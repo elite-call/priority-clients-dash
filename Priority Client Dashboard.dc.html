@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E6E8EC;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#2A5CE6}a:hover{color:#1C46C2}
+button{font-family:'Barlow',sans-serif;cursor:pointer}
+select{font-family:'Barlow',sans-serif}
+@keyframes ecFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes ecPanelIn{from{opacity:0;transform:scale(.965) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ecZoomIn{from{opacity:0;transform:scale(.93) translateY(18px)}to{opacity:1;transform:none}}
+@keyframes ecZoomOut{to{opacity:0;transform:scale(.95) translateY(12px)}}
+@keyframes ecSlideL{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+@keyframes ecSlideOutL{to{opacity:0;transform:translateX(-16px)}}
+@keyframes ecDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes ecAreaIn{from{opacity:0}to{opacity:1}}
+@keyframes ecCallsIn{from{opacity:0}to{opacity:.7}}
+@keyframes ecDotIn{from{opacity:0;stroke-width:0}to{opacity:1;stroke-width:8}}
+</style>
+</helmet>
+<div style="height:100vh;display:flex;flex-direction:column;overflow:hidden">
+  <div data-screen-label="Header" style="display:flex;align-items:center;gap:18px;padding:9px 20px;background:#FFFFFF;border-bottom:1px solid rgba(15,25,60,.08);flex:none">
+    <img src="uploads/emblem_horizontal_signature.png" alt="Elite Call" style="height:32px;display:block">
+    <div style="font:700 12px Barlow,sans-serif;letter-spacing:.22em;color:#5A6472;border-left:1px solid rgba(15,25,60,.15);padding-left:18px">PRIORITY CLIENT PERFORMANCE</div>
+    <div style="flex:1"></div>
+    <sc-if value="{{ auto }}">
+      <div style="font:700 11px Barlow,sans-serif;letter-spacing:.14em;color:#2A5CE6;background:rgba(42,92,230,.09);border:1px solid rgba(42,92,230,.25);border-radius:999px;padding:5px 14px">AUTO-CYCLING · INTERACT TO PAUSE</div>
+    </sc-if>
+    <div style="font:600 12.5px Barlow,sans-serif;color:#7A8394">{{ updatedLabel }}</div>
+    <a href="Daily Data Ingestion.dc.html" style="font:700 11px Barlow,sans-serif;letter-spacing:.12em;color:#2A5CE6;background:rgba(42,92,230,.08);border:1.5px solid rgba(42,92,230,.28);border-radius:999px;padding:7px 15px;text-decoration:none;white-space:nowrap">UPDATE DATA</a>
+  </div>
+
+  <sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(348px,1fr));gap:13px;padding:13px;min-height:0;overflow-y:auto">
+
+    <div data-screen-label="OHS panel" ref="{{ ohsPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
+      <div style="height:5px;flex:none;background:linear-gradient(90deg,#3D5EE0 0 72%,#FFD437 72% 100%)"></div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;min-height:58px">
+          <svg width="30" height="16" viewBox="0 0 30 16" style="overflow:visible;flex:none"><path d="M2 14 L15 3 L28 14" style="fill:none;stroke:#3D5EE0;stroke-width:5;stroke-linecap:round;stroke-linejoin:round"></path></svg>
+          <div><div style="font:800 21px/1 Barlow,sans-serif;color:#17233F;letter-spacing:-.02em">oncourse</div><div style="font:600 10.5px/1.4 Barlow,sans-serif;color:#6B7590;letter-spacing:.05em">home solutions</div></div>
+        </div>
+        <div style="flex:1"></div>
+        <select value="{{ ohs.seg }}" onChange="{{ ohs.setSeg }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#2A47B8;background:rgba(61,94,224,.07);border:1.5px solid rgba(61,94,224,.3);border-radius:9px;padding:5px 8px">
+          <option value="">Both</option><option value="fp5">FP5</option><option value="prob_enroll">PROB ENROLL</option>
+        </select>
+        <select value="{{ ohs.range }}" onChange="{{ ohs.setRange }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(61,94,224,.35);border-radius:9px;padding:5px 8px">
+          <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="this_week">This week</option><option value="last_week">Last week</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_30">Last 30 days</option><option value="last_90">Last 90 days</option>
+        </select>
+        <button onClick="{{ ohs.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#3D5EE0;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
+      </div>
+      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+        <div style="display:flex;gap:40px;align-items:flex-end">
+          <div>
+            <sc-if value="{{ ohs.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#3D5EE0">{{ ohs.convTotals }}</div></sc-if><sc-if value="{{ ohs.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B93A6;max-width:12ch;padding:6px 0 4px">{{ ohs.convMissing }}</div></sc-if>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#3D5EE0">{{ ohs.convLabel }}</div>
+            <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B93A6">{{ ohs.segNote }}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">LEADS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">CALLS PLACED</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">NET CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#B4BAC6">{{ ohs.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">PAYROLL HRS</div></div>
+        </div>
+      </div>
+      <sc-if value="{{ ohs.hasTop }}">
+        <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#17233F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ohs.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#6B7590;flex:none">{{ ohs.topLeads }}</span></div>
+      </sc-if>
+      <div style="flex:none;padding:0 18px 12px">
+        <div style="background:rgba(61,94,224,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+          <div style="flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#2A47B8">{{ ohs.convContacts }}</div>
+            <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6B7590;white-space:nowrap">{{ ohs.statLabel }}</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#3D5EE0">FP5 · 3-PASS LIST CONVERSION</div>
+            <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ ohs.targetBarW }};background:#3D5EE0;border-radius:999px"></div></div>
+          </div>
+          <div style="text-align:right;flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#17233F">{{ ohs.targetActual }}</div>
+            <div style="margin-top:3px;font:700 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#6B7590">{{ ohs.targetNote }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="SE panel" ref="{{ sePanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
+      <div style="height:5px;flex:none;background:linear-gradient(90deg,#C8102E 0 50%,#1F7BC0 50% 100%)"></div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
+        <div style="min-height:58px;display:flex;align-items:center;flex:none"><img src="uploads/pasted-1786477833642-0.png" alt="Service Experts" style="height:58px;mix-blend-mode:multiply;display:block;margin:-6px 0"></div>
+        <div style="flex:1"></div>
+        <select value="{{ se.seg }}" onChange="{{ se.setSeg }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#9E0D24;background:rgba(200,16,46,.06);border:1.5px solid rgba(200,16,46,.28);border-radius:9px;padding:5px 8px">
+          <option value="">Both</option><option value="active">ACTIVE</option><option value="renew">RENEW</option>
+        </select>
+        <select value="{{ se.range }}" onChange="{{ se.setRange }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#1C1C1E;background:#FFFFFF;border:1.5px solid rgba(200,16,46,.3);border-radius:9px;padding:5px 8px">
+          <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="this_week">This week</option><option value="last_week">Last week</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_30">Last 30 days</option><option value="last_90">Last 90 days</option>
+        </select>
+        <button onClick="{{ se.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#C8102E;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
+      </div>
+      <sc-if value="{{ se.hasBranches }}">
+      <div style="display:flex;gap:8px;padding:2px 18px 0">
+        <button onClick="{{ se.goBranches }}" style="font:600 12px Barlow,sans-serif;color:#155E93;background:rgba(31,123,192,.09);border:1px solid rgba(31,123,192,.25);border-radius:999px;padding:5px 12px;white-space:nowrap">{{ se.branchLabel }} · VIEW BY BRANCH</button>
+      </div>
+      </sc-if>
+      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+        <div style="display:flex;gap:40px;align-items:flex-end">
+          <div>
+            <sc-if value="{{ se.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#C8102E">{{ se.convTotals }}</div></sc-if><sc-if value="{{ se.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B8F98;max-width:12ch;padding:6px 0 4px">{{ se.convMissing }}</div></sc-if>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#C8102E">{{ se.convLabel }}</div>
+            <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B8F98">{{ se.segNote }}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">LEADS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CALLS PLACED</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#B7BBC2">{{ se.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">PAYROLL HRS</div></div>
+        </div>
+      </div>
+      <sc-if value="{{ se.hasTop }}">
+        <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ se.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#6E747E;flex:none">{{ se.topLeads }}</span></div>
+      </sc-if>
+      <div style="flex:none;padding:0 18px 12px">
+        <div style="background:rgba(200,16,46,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+          <div style="flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#9E0D24">{{ se.convContacts }}</div>
+            <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6E747E;white-space:nowrap">{{ se.statLabel }}</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#C8102E">ACTIVE · 3-PASS LIST CONVERSION</div>
+            <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ se.targetBarW }};background:#C8102E;border-radius:999px"></div></div>
+          </div>
+          <div style="text-align:right;flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#1C1C1E">{{ se.targetActual }}</div>
+            <div style="margin-top:3px;font:700 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#6E747E">{{ se.targetNote }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="AGN panel" ref="{{ agnPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
+      <div style="height:5px;flex:none;background:linear-gradient(90deg,#2E7CC0 0 72%,#7CB9EA 72% 100%)"></div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
+        <div style="min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center">
+          <img src="assets/agn-logo-blue.png" alt="Auto Glass Now" style="height:29px;display:block">
+          <div style="font:700 10.5px Barlow,sans-serif;letter-spacing:.2em;color:#5E7288;margin-top:5px;white-space:nowrap">A DRIVENBRANDS COMPANY</div>
+        </div>
+        <div style="flex:1"></div>
+        <select value="{{ agn.range }}" onChange="{{ agn.setRange }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#12293E;background:#FFFFFF;border:1.5px solid rgba(46,124,192,.35);border-radius:9px;padding:5px 8px">
+          <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="this_week">This week</option><option value="last_week">Last week</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_30">Last 30 days</option><option value="last_90">Last 90 days</option>
+        </select>
+        <button onClick="{{ agn.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2E7CC0;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
+      </div>
+      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+        <div style="display:flex;gap:40px;align-items:flex-end">
+          <div>
+            <sc-if value="{{ agn.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#2E7CC0">{{ agn.convTotals }}</div></sc-if><sc-if value="{{ agn.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8AA0B4;max-width:12ch;padding:6px 0 4px">{{ agn.convMissing }}</div></sc-if>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">{{ agn.convLabel }}</div>
+            <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8AA0B4">{{ agn.segNote }}</div>
+          </div>
+          <div>
+            <div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ agn.stlColor }}">{{ agn.stl }}</div>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">AVG SPEED-TO-LEAD</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">LEADS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">CALLS PLACED</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.quotes }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">QUOTES TOUCHED</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#AEBDC9">{{ agn.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">PAYROLL HRS</div></div>
+        </div>
+      </div>
+      <sc-if value="{{ agn.hasTop }}">
+        <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#12293E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ agn.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#5E7288;flex:none">{{ agn.topLeads }}</span></div>
+      </sc-if>
+      <div style="flex:none;padding:0 18px 12px">
+        <div style="background:rgba(46,124,192,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+          <div style="flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#1F639E">{{ agn.convContacts }}</div>
+            <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#5E7288;white-space:nowrap">{{ agn.statLabel }}</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">QUOTE CONVERSION TARGET</div>
+            <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ agn.targetBarW }};background:#2E7CC0;border-radius:999px"></div></div>
+          </div>
+          <div style="text-align:right;flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#12293E">{{ agn.targetActual }}</div>
+            <div style="margin-top:3px;font:700 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#5E7288">{{ agn.targetNote }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="A1G panel" ref="{{ a1gPanelRef }}" style="background:#FDF9F0;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
+      <div style="height:5px;flex:none;background:linear-gradient(90deg,#B92B27 0 72%,#8A6B4F 72% 100%)"></div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
+        <div style="min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font:700 24px/1 'Barlow Condensed',sans-serif;letter-spacing:.01em"><span style="color:#B92B27">A1</span> <span style="color:#33231A">GARAGE</span></div>
+          <div style="font:600 10px Barlow,sans-serif;letter-spacing:.32em;color:#8A6B4F;margin-top:3px">DOOR SERVICE</div>
+        </div>
+        <div style="flex:1"></div>
+        <select value="{{ a1g.seg }}" onChange="{{ a1g.setSeg }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#93221F;background:rgba(185,43,39,.06);border:1.5px solid rgba(185,43,39,.28);border-radius:9px;padding:5px 8px">
+          <option value="">Both</option><option value="priority">PRIORITY</option><option value="stl">STL</option>
+        </select>
+        <select value="{{ a1g.range }}" onChange="{{ a1g.setRange }}" style="flex:none;font:600 12.5px Barlow,sans-serif;color:#33231A;background:#FFFFFF;border:1.5px solid rgba(185,43,39,.35);border-radius:9px;padding:5px 8px">
+          <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="this_week">This week</option><option value="last_week">Last week</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_30">Last 30 days</option><option value="last_90">Last 90 days</option>
+        </select>
+        <button onClick="{{ a1g.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#B92B27;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
+      </div>
+      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+        <div style="display:flex;gap:40px;align-items:flex-end">
+          <div>
+            <sc-if value="{{ a1g.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#B92B27">{{ a1g.convTotals }}</div></sc-if><sc-if value="{{ a1g.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#9C8C7C;max-width:12ch;padding:6px 0 4px">{{ a1g.convMissing }}</div></sc-if>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">{{ a1g.convLabel }}</div>
+            <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">{{ a1g.segNote }}</div>
+          </div>
+          <div>
+            <div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ a1g.stlColor }}">{{ a1g.stl }}</div>
+            <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">AVG SPEED-TO-LEAD</div>
+            <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">Company-wide average</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">LEADS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CALLS PLACED</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#C3B6A6">{{ a1g.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">PAYROLL HRS</div></div>
+        </div>
+      </div>
+      <sc-if value="{{ a1g.hasTop }}">
+        <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#33231A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a1g.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#8A7A6A;flex:none">{{ a1g.topLeads }}</span></div>
+      </sc-if>
+      <div style="flex:none;padding:0 18px 12px">
+        <div style="background:rgba(185,43,39,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+          <div style="flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#93221F">{{ a1g.convContacts }}</div>
+            <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A7A6A;white-space:nowrap">{{ a1g.statLabel }}</div>
+          </div>
+          <div style="width:1px;height:32px;background:rgba(51,35,26,.14);flex:none"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">PRIORITY · 3-PASS LIST CONVERSION</div>
+            <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(51,35,26,.12)"><div style="height:100%;width:{{ a1g.targetBarW }};background:#B92B27;border-radius:999px"></div></div>
+          </div>
+          <div style="text-align:right;flex:none">
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#33231A">{{ a1g.targetActual }}</div>
+            <div style="margin-top:3px;font:700 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A7A6A">{{ a1g.targetNote }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ exOn }}">
+  <div data-screen-label="Drill-down" style="flex:1;display:flex;gap:13px;padding:13px;min-height:0">
+    <div style="width:212px;flex:none;display:flex;flex-direction:column;gap:10px">
+      <button onClick="{{ collapse }}" style="text-align:left;font:700 11.5px Barlow,sans-serif;letter-spacing:.12em;color:#5A6472;background:#FFFFFF;border:2px solid rgba(15,25,60,.08);border-radius:12px;padding:12px 14px">◂ ALL CLIENTS</button>
+      <sc-for list="{{ rail }}" as="r" hint-placeholder-count="4">
+        <button onClick="{{ r.go }}" ref="{{ r.ref }}" style="text-align:left;background:{{ r.bg }};color:{{ r.ink }};border:{{ r.border }};border-radius:12px;padding:12px 14px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:{{ r.dot }};flex:none"></span><span style="font:700 14px/1.2 Barlow,sans-serif">{{ r.name }}</span></div>
+          <div style="font:600 12px Barlow,sans-serif;opacity:.75;margin-top:5px;padding-left:17px">{{ r.leads }}</div>
+        </button>
+      </sc-for>
+      <div style="flex:1"></div>
+      <div style="font:600 11px/1.5 Barlow,sans-serif;color:#98A0AE;padding:0 4px">Rail totals follow the drill-down date range.</div>
+    </div>
+
+    <div ref="{{ drillRef }}" style="flex:1;min-width:0;background:{{ ex.bg }};color:{{ ex.ink }};border-radius:16px;box-shadow:0 1px 6px rgba(15,25,60,.1);display:flex;flex-direction:column;min-height:0;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 22px 0;flex-wrap:wrap">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <div style="font:800 26px/1 Barlow,sans-serif;color:{{ ex.accent }}">{{ ex.name }}</div>
+          <div style="font:700 10px Barlow,sans-serif;letter-spacing:.26em;color:{{ ex.sub }}">{{ ex.tag }}</div>
+        </div>
+        <sc-if value="{{ ex.hasBranch }}">
+          <button onClick="{{ ex.clearBranch }}" style="font:600 12px Barlow,sans-serif;color:{{ ex.ink }};background:{{ ex.soft }};border:1px solid {{ ex.line }};border-radius:999px;padding:5px 12px">{{ ex.branchName }} ✕</button>
+        </sc-if>
+        <sc-if value="{{ ex.hasRep }}">
+          <button onClick="{{ ex.clearRep }}" style="font:600 12px Barlow,sans-serif;color:{{ ex.ink }};background:{{ ex.soft }};border:1px solid {{ ex.line }};border-radius:999px;padding:5px 12px">Rep: {{ ex.repName }} ✕</button>
+        </sc-if>
+        <div style="flex:1"></div>
+        <sc-if value="{{ ex.hasSegPicker }}">
+          <select value="{{ ex.seg }}" onChange="{{ ex.setSeg }}" style="font:600 13px Barlow,sans-serif;color:{{ ex.ink }};background:{{ ex.soft }};border:1.5px solid {{ ex.line }};border-radius:9px;padding:6px 9px">
+            <sc-for list="{{ ex.segOpts }}" as="so" hint-placeholder-count="3">
+              <option value="{{ so.v }}">{{ so.label }}</option>
+            </sc-for>
+          </select>
+        </sc-if>
+        <select value="{{ exRange }}" onChange="{{ setExRange }}" style="font:600 13px Barlow,sans-serif;color:{{ ex.ink }};background:{{ ex.soft }};border:1.5px solid {{ ex.line }};border-radius:9px;padding:6px 9px">
+          <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="this_week">This week</option><option value="last_week">Last week</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_30">Last 30 days</option><option value="last_90">Last 90 days</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;padding:12px 22px 0;flex-wrap:wrap">
+        <sc-for list="{{ ex.tabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.go }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.08em;padding:7px 16px;border-radius:999px;background:{{ t.bg }};color:{{ t.ink }};border:1.5px solid {{ t.bd }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="flex:1;min-height:0;padding:16px 22px 18px;display:flex;flex-direction:column">
+
+        <sc-if value="{{ ex.tabOverview }}">
+        <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-height:0;animation:ecFade .25s ease">
+          <div style="display:flex;gap:26px;flex-wrap:wrap">
+            <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.calls }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">CALLS PLACED</div></div>
+            <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.contacts }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">{{ ex.contactsLabel }}</div></div>
+            <div><div style="font:800 44px/1 Barlow,sans-serif;color:{{ ex.accent }}">{{ ex.leads }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">LEADS</div></div>
+            <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.convTotals }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">CONV · {{ ex.totalsLabel }}</div></div>
+            <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.convContacts }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">{{ ex.statLabel }}</div></div>
+            <sc-if value="{{ ex.hasDialed }}">
+              <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.convDialed }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">CONV · LEADS/DIALED</div></div>
+            </sc-if>
+            <sc-if value="{{ ex.hasStl }}">
+              <div><div style="font:800 44px/1 Barlow,sans-serif;color:{{ ex.stlColor }}">{{ ex.stl }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">AVG SPEED-TO-LEAD</div></div>
+            </sc-if>
+          </div>
+          <div style="flex:1;display:flex;gap:16px;min-height:0">
+            <div style="flex:2.2;min-width:0;background:{{ ex.card }};border-radius:12px;padding:14px 16px;display:flex;flex-direction:column">
+              <div style="display:flex;gap:16px;align-items:baseline">
+                <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">LEADS TREND</div>
+                <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }}">— leads (peak {{ ex.maxLeads }}) · - - calls (peak {{ ex.maxCalls }})</div>
+              </div>
+              <sc-if value="{{ ex.noTrend }}">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;font:600 13px Barlow,sans-serif;color:{{ ex.sub }};text-align:center">{{ ex.trendNote }}</div>
+              </sc-if>
+              <sc-if value="{{ ex.hasTrend }}" hint-placeholder-val="{{ true }}">
+              <svg viewBox="0 0 800 240" preserveAspectRatio="none" style="flex:1;width:100%;min-height:0;margin-top:8px">
+                <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .8s ease .4s both"></path>
+                <polyline points="{{ ex.callsPts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.6;stroke-dasharray:6 5;opacity:.7;animation:ecCallsIn .5s ease .95s both"></polyline>
+                <polyline pathLength="1" points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:3;stroke-dasharray:1;animation:ecDraw .9s cubic-bezier(.4,0,.2,1) .15s both"></polyline>
+                <sc-for list="{{ ex.dots }}" as="dt" hint-placeholder-count="0">
+                  <path d="{{ dt.d }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:8;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecDotIn .35s cubic-bezier(.34,1.56,.64,1) {{ dt.delay }} both"></path>
+                </sc-for>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};margin-top:6px"><span>{{ ex.x0 }}</span><span>{{ ex.x1 }}</span></div>
+              </sc-if>
+            </div>
+            <div style="flex:1;min-width:230px;display:flex;flex-direction:column;gap:12px;overflow:auto">
+              <div style="background:{{ ex.card }};border-radius:12px;padding:14px 16px">
+                <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }};margin-bottom:8px">{{ ex.targetTitle }}</div>
+                <div style="display:flex;align-items:baseline;gap:10px">
+                  <div style="font:800 30px/1 Barlow,sans-serif">{{ ex.targetActual }}</div>
+                  <div style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.sub }}">{{ ex.targetNote }}</div>
+                </div>
+                <div style="height:8px;margin-top:10px;border-radius:999px;background:{{ ex.line }}"><div style="height:100%;width:{{ ex.targetBarW }};background:{{ ex.accent }};border-radius:999px"></div></div>
+                <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};margin-top:8px">{{ ex.targetSource }}</div>
+              </div>
+              <sc-if value="{{ ex.hasStl }}">
+                <div style="background:{{ ex.card }};border-radius:12px;padding:14px 16px">
+                  <sc-if value="{{ ex.stlArt }}"><img src="uploads/speed-to-lead-1a.png" alt="Speed-To-Lead" style="height:30px;display:block;margin:0 0 8px -6px"></sc-if>
+                  <div style="display:flex;align-items:baseline;gap:10px"><div style="font:800 34px/1 Barlow,sans-serif;color:{{ ex.stlColor }}">{{ ex.stl }}</div><div style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.stlColor }}">{{ ex.stlOnTarget }}</div></div>
+                  <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};margin:6px 0 8px">Target ≤ {{ stlTargetLabel }} from inquiry to first dial</div>
+                  <div style="height:8px;border-radius:999px;background:{{ ex.line }};position:relative;overflow:hidden">
+                    <div style="position:absolute;inset:0 auto 0 0;width:{{ ex.stlBarW }};background:{{ ex.stlColor }};border-radius:999px"></div>
+                    <div style="position:absolute;top:-2px;bottom:-2px;left:50%;width:2px;background:{{ ex.ink }};opacity:.5"></div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ ex.hasReps }}">
+              <div style="background:{{ ex.card }};border-radius:12px;padding:14px 16px">
+                <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }};margin-bottom:10px">TOP REPS</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ ex.topMini }}" as="tm" hint-placeholder-count="3">
+                    <div style="display:flex;gap:10px;align-items:baseline;font:600 13px Barlow,sans-serif"><span style="color:{{ ex.sub }};width:14px">{{ tm.rank }}</span><span style="flex:1">{{ tm.name }}</span><span style="font-weight:700;color:{{ ex.accent }}">{{ tm.leads }}</span></div>
+                  </sc-for>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ ex.tabReps }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;animation:ecFade .25s ease">
+          <div style="display:grid;grid-template-columns:34px 1.5fr 2.2fr .8fr .8fr .7fr .7fr .7fr;gap:10px;padding:0 12px 8px;font:700 10.5px Barlow,sans-serif;letter-spacing:.12em;color:{{ ex.sub }}">
+            <div>#</div><div>REP</div><div>LEADS</div><div style="text-align:right">CALLS</div><div style="text-align:right">CONTACTS</div><div style="text-align:right">LEADS</div><div style="text-align:right">CONV</div><div style="text-align:right">STL</div>
+          </div>
+          <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:4px">
+            <sc-for list="{{ ex.reps }}" as="rp" hint-placeholder-count="8">
+              <button onClick="{{ rp.go }}" style="display:grid;grid-template-columns:34px 1.5fr 2.2fr .8fr .8fr .7fr .7fr .7fr;gap:10px;align-items:center;padding:8px 12px;border:none;border-radius:9px;background:{{ rp.hl }};color:{{ ex.ink }};text-align:left">
+                <div style="font:700 13px Barlow,sans-serif;color:{{ ex.sub }}">{{ rp.rank }}</div>
+                <div style="font:700 14.5px Barlow,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rp.name }}</div>
+                <div style="height:12px;border-radius:999px;background:{{ ex.line }}"><div style="height:100%;width:{{ rp.barW }};background:{{ ex.accent }};border-radius:999px"></div></div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.calls }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.contacts }}</div>
+                <div style="font:700 14px Barlow,sans-serif;text-align:right;color:{{ ex.accent }}">{{ rp.leads }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.conv }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.stl }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:8px">Rep rows come from the per-rep feed, not the compiled daily totals. Click a rep to filter the drill-down to them.</div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ ex.tabTrend }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;animation:ecFade .25s ease">
+          <div style="display:flex;gap:18px;font:600 12.5px Barlow,sans-serif;color:{{ ex.sub }};padding-bottom:6px">
+            <span><b style="color:{{ ex.accent }}">—</b> Leads (peak {{ ex.maxLeads }})</span>
+            <span><b>- -</b> Calls (peak {{ ex.maxCalls }})</span>
+            <span style="flex:1"></span><span>{{ ex.rangeLabel }}</span>
+          </div>
+          <sc-if value="{{ ex.noTrend }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;font:600 14px Barlow,sans-serif;color:{{ ex.sub }}">{{ ex.trendNote }}</div>
+          </sc-if>
+          <sc-if value="{{ ex.hasTrend }}" hint-placeholder-val="{{ true }}">
+          <svg viewBox="0 0 800 240" preserveAspectRatio="none" style="flex:1;width:100%;min-height:0">
+            <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .8s ease .4s both"></path>
+            <polyline points="{{ ex.callsPts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.6;stroke-dasharray:6 5;opacity:.7;animation:ecCallsIn .5s ease .95s both"></polyline>
+            <polyline pathLength="1" points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:3;stroke-dasharray:1;animation:ecDraw .9s cubic-bezier(.4,0,.2,1) .15s both"></polyline>
+            <sc-for list="{{ ex.dots }}" as="dt" hint-placeholder-count="0">
+              <path d="{{ dt.d }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:8;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecDotIn .35s cubic-bezier(.34,1.56,.64,1) {{ dt.delay }} both"></path>
+            </sc-for>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font:600 12px Barlow,sans-serif;color:{{ ex.sub }};padding-top:6px"><span>{{ ex.x0 }}</span><span>{{ ex.x1 }}</span></div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ ex.tabHeat }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:5px;animation:ecFade .25s ease">
+          <div style="display:grid;grid-template-columns:44px repeat(14,1fr);gap:5px;font:700 10.5px Barlow,sans-serif;letter-spacing:.06em;color:{{ ex.sub }};text-align:center">
+            <div></div><div>7a</div><div>8a</div><div>9a</div><div>10a</div><div>11a</div><div>12p</div><div>1p</div><div>2p</div><div>3p</div><div>4p</div><div>5p</div><div>6p</div><div>7p</div><div>8p</div>
+          </div>
+          <sc-for list="{{ ex.heatRows }}" as="hr" hint-placeholder-count="7">
+            <div style="flex:1;display:grid;grid-template-columns:44px repeat(14,1fr);gap:5px;min-height:0">
+              <div style="font:700 11.5px Barlow,sans-serif;color:{{ ex.sub }};display:flex;align-items:center">{{ hr.label }}</div>
+              <sc-for list="{{ hr.cells }}" as="cl" hint-placeholder-count="14">
+                <div style="border-radius:5px;background:{{ cl.bg }}" title="{{ cl.t }}"></div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:4px">{{ ex.heatNote }}</div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ ex.tabCamps }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;animation:ecFade .25s ease">
+          <div style="display:grid;grid-template-columns:34px 1.5fr 2.2fr .8fr .8fr .7fr .7fr .7fr;gap:10px;padding:0 12px 8px;font:700 10.5px Barlow,sans-serif;letter-spacing:.12em;color:{{ ex.sub }}">
+            <div>#</div><div>{{ ex.campsLabelUpper }}</div><div>LEADS</div><div style="text-align:right">CALLS</div><div style="text-align:right">CONTACTS</div><div style="text-align:right">LEADS</div><div style="text-align:right">CONV</div><div style="text-align:right">STL</div>
+          </div>
+          <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:4px">
+            <sc-for list="{{ ex.camps }}" as="cp" hint-placeholder-count="8">
+              <button onClick="{{ cp.go }}" style="display:grid;grid-template-columns:34px 1.5fr 2.2fr .8fr .8fr .7fr .7fr .7fr;gap:10px;align-items:center;padding:8px 12px;border:none;border-radius:9px;background:{{ cp.hl }};color:{{ ex.ink }};text-align:left">
+                <div style="font:700 13px Barlow,sans-serif;color:{{ ex.sub }}">{{ cp.rank }}</div>
+                <div style="font:700 14.5px Barlow,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cp.name }}</div>
+                <div style="height:12px;border-radius:999px;background:{{ ex.line }}"><div style="height:100%;width:{{ cp.barW }};background:{{ ex.accent }};border-radius:999px"></div></div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ cp.calls }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ cp.contacts }}</div>
+                <div style="font:700 14px Barlow,sans-serif;text-align:right;color:{{ ex.accent }}">{{ cp.leads }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ cp.conv }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ cp.stl }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:8px">{{ ex.campsNote }}</div>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;idleSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:45,&quot;min&quot;:10,&quot;max&quot;:300,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;rotateSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:5,&quot;max&quot;:60,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;stlTargetSec&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:60,&quot;min&quot;:10,&quot;max&quot;:300,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Targets&quot;}}">
+class Component extends DCLogic {
+  state = { data:null, ranges:{ohs:'this_month',se:'this_month',agn:'this_month',a1g:'this_month'},
+    segs:{ohs:'',se:'',agn:'',a1g:''},
+    expanded:null, tab:'overview', exRange:'this_month', branch:null, rep:null, auto:false, closing:false };
+  getRef(k){
+    this._refCbs=this._refCbs||{};this._els=this._els||{};
+    if(!this._refCbs[k])this._refCbs[k]=el=>{this._els[k]=el;};
+    return this._refCbs[k];
+  }
+  flip(el,from,dur){
+    dur=dur||480;
+    const to=el.getBoundingClientRect();if(!to.width||!from.width)return;
+    el.style.transition='none';el.style.transformOrigin='top left';el.style.animation='none';
+    el.style.transform='translate('+(from.left-to.left)+'px,'+(from.top-to.top)+'px) scale('+(from.width/to.width)+','+(from.height/to.height)+')';
+    el.getBoundingClientRect();
+    el.style.transition='transform '+dur+'ms cubic-bezier(.22,1,.36,1)';
+    el.style.transform='';
+    setTimeout(()=>{if(el.isConnected){el.style.transition='';el.style.transformOrigin='';}},dur+60);
+  }
+  getEls(){
+    const out=Object.assign({},this._els||{});const KEYS=['ohs','se','agn','a1g'];
+    for(const k of KEYS)if(!out['panel_'+k]){const el=document.querySelector('[data-screen-label="'+k.toUpperCase()+' panel"]');if(el)out['panel_'+k]=el;}
+    const dd=document.querySelector('[data-screen-label="Drill-down"]');
+    if(dd){
+      if(!out.drill)out.drill=dd.children[1];
+      const btns=dd.querySelectorAll(':scope > div:first-child > button');
+      KEYS.forEach((k,i)=>{if(!out['rail_'+k]&&btns[i+1])out['rail_'+k]=btns[i+1];});
+    }
+    return out;
+  }
+  afterRender(fn){
+    let tries=0;
+    const run=()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+      if(!fn()&&++tries<4)setTimeout(run,40);
+    });});};
+    run();
+  }
+  closeDrill(){
+    const els=this.getEls();const KEYS=['ohs','se','agn','a1g'];const cid=this.state.expanded;
+    const rects={};
+    if(els.drill)rects.drill=els.drill.getBoundingClientRect();
+    for(const k of KEYS)if(els['rail_'+k])rects['rail_'+k]=els['rail_'+k].getBoundingClientRect();
+    this.setState({expanded:null,branch:null,rep:null});
+    this.afterRender(()=>{
+      const e2=this.getEls();let ok=false;
+      for(const k of KEYS){const el=e2['panel_'+k];if(!el)continue;ok=true;
+        const from=k===cid?rects.drill:rects['rail_'+k];
+        if(from)this.flip(el,from);}
+      return ok;
+    });
+  }
+
+  static CFG = {
+    ohs:{name:'Oncourse Home Solutions', accent:'#3D5EE0', bg:'#FFFFFF', ink:'#17233F', sub:'#6B7590', soft:'rgba(61,94,224,.10)', heatRGB:'61,94,224', dark:false},
+    se: {name:'Service Experts', accent:'#C8102E', bg:'#FFFFFF', ink:'#1C1C1E', sub:'#6E747E', soft:'rgba(200,16,46,.08)', heatRGB:'200,16,46', dark:false},
+    agn:{name:'Auto Glass Now', accent:'#2E7CC0', bg:'#FFFFFF', ink:'#12293E', sub:'#5E7288', soft:'rgba(46,124,192,.10)', heatRGB:'46,124,192', dark:false},
+    a1g:{name:'A1 Garage Door Service', accent:'#B92B27', bg:'#FDF9F0', ink:'#33231A', sub:'#8A7A6A', soft:'rgba(185,43,39,.10)', heatRGB:'185,43,39', dark:false}
+  };
+  static STEPS = [{grid:1},{c:'ohs',t:'overview'},{c:'ohs',t:'reps'},{c:'se',t:'overview'},{c:'se',t:'camps'},{c:'agn',t:'overview'},{c:'agn',t:'heat'},{c:'a1g',t:'overview'},{c:'a1g',t:'reps'}];
+  static RANGES = [['today','Today'],['yesterday','Yesterday'],['this_week','This week'],['last_week','Last week'],['this_month','This month'],['last_month','Last month'],['last_30','Last 30 days'],['last_90','Last 90 days']];
+
+  // Manual feed: one CSV the user maintains + a static config file.
+  parseCsv(text){
+    const rows=[];const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim()!=='');
+    if(!lines.length)return rows;
+    const split=l=>{const o=[];let cur='',q=false;
+      for(let i=0;i<l.length;i++){const c=l[i];
+        if(q){if(c==='"'){if(l[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+        else if(c==='"')q=true;else if(c===','){o.push(cur);cur='';}else cur+=c;}
+      o.push(cur);return o;};
+    const hdr=split(lines[0]).map(h=>h.trim());
+    for(const l of lines.slice(1)){const c=split(l);const o={};hdr.forEach((h,i)=>{o[h]=(c[i]||'').trim();});rows.push(o);}
+    return rows;
+  }
+  toIso(s){
+    s=(s||'').trim();
+    const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(m)return m[3]+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+    return /^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):'';
+  }
+  buildFromCsv(cfg,csv){
+    const out={};const conf=(cfg&&cfg.clients)||{};
+    for(const k in conf)out[k]=Object.assign({client:k,daily:[],detail:[],heatMetric:'contacts',hourStart:7},conf[k]);
+    const num=v=>{v=(v==null?'':String(v)).replace(/[$,%\s]/g,'');return v===''||isNaN(+v)?null:+v;};
+    for(const r of this.parseCsv(csv)){
+      const f=out[(r.Client||'').trim().toLowerCase()];if(!f)continue;
+      const d=this.toIso(r.Date);if(!d)continue;
+      const calls=num(r.Calls),contacts=num(r.Contacts),leads=num(r.Leads);
+      if(calls==null&&contacts==null&&leads==null)continue;   // unfilled skeleton row
+      const nm=(r.CampaignSegment||'').trim();let seg='';
+      if(nm){const s=(f.segments||[]).find(x=>x.name.toLowerCase()===nm.toLowerCase()||x.id===nm.toLowerCase());seg=s?s.id:nm.toLowerCase();}
+      // Denom is only a real denominator for AGN (quotes); elsewhere Calls already is the dial count.
+      const keepDenom=f.convTotalsDenom==='denom';
+      f.daily.push({d,seg,calls:calls||0,contacts:contacts||0,leads:leads||0,
+        denom:keepDenom?num(r.Denom):null,listSize:num(r.ListSize),contactsCampaign:null,
+        stlSec:num(r.AvgSTLsec),hours:num(r.PayrollHours)});
+    }
+    for(const k in out)out[k].daily.sort((a,b)=>a.d<b.d?-1:1);
+    return out;
+  }
+  segId(f,name){
+    const nm=(name||'').trim();if(!nm)return '';
+    const s=(f.segments||[]).find(x=>x.name.toLowerCase()===nm.toLowerCase()||x.id===nm.toLowerCase());
+    return s?s.id:nm.toLowerCase();
+  }
+  // One detail row per (client, date, segment); hourly buckets and rep rows land on the same object.
+  detailRow(f,d,seg){
+    f._dmap=f._dmap||{};
+    const key=d+'|'+seg;
+    if(!f._dmap[key]){f._dmap[key]={d,seg,branch:null,hours:null,reps:[]};f.detail.push(f._dmap[key]);}
+    return f._dmap[key];
+  }
+  buildHourly(all,csv){
+    if(!csv)return;
+    for(const r of this.parseCsv(csv)){
+      const f=all[(r.Client||'').trim().toLowerCase()];if(!f)continue;
+      const d=this.toIso(r.Date);if(!d)continue;
+      const cols=Object.keys(r).filter(k=>/^H\d\d$/i.test(k)).sort();
+      if(!cols.length)continue;
+      const o=this.detailRow(f,d,this.segId(f,r.CampaignSegment));
+      o.hours=o.hours||{};
+      o.hours[(r.Metric||'contacts').trim().toLowerCase()]=cols.slice(0,14).map(k=>+r[k]||0);
+    }
+  }
+  buildReps(all,csv){
+    if(!csv)return;
+    for(const r of this.parseCsv(csv)){
+      const f=all[(r.Client||'').trim().toLowerCase()];if(!f)continue;
+      const d=this.toIso(r.Date);if(!d)continue;
+      const name=(r.Rep||'').trim();if(!name)continue;
+      const o=this.detailRow(f,d,this.segId(f,r.CampaignSegment));
+      // Blank means "not ingested", not zero — Agent Summary is optional, so dials are often unknown.
+      const n=v=>{v=(v==null?'':String(v)).trim();return v===''||isNaN(+v)?null:+v;};
+      o.reps.push([name,n(r.Calls),n(r.Contacts),n(r.Leads)||0]);
+    }
+  }
+  // Branch leads come from the Appointment Report; display only, no rep attribution behind them.
+  buildBranches(all,csv){
+    if(!csv)return;
+    for(const r of this.parseCsv(csv)){
+      const f=all[(r.Client||'').trim().toLowerCase()];if(!f)continue;
+      const d=this.toIso(r.Date);if(!d)continue;
+      const name=(r.Branch||'').trim();if(!name)continue;
+      f.branchRows=f.branchRows||[];
+      f.branchRows.push({d,seg:this.segId(f,r.CampaignSegment),branch:name,leads:+r.Leads||0});
+    }
+  }
+  // The ingestion page writes this; same browser, so the dashboard can read it with no file shuffling.
+  readCache(){
+    try{
+      const raw=localStorage.getItem('ec_ingest_cache_v1');
+      if(!raw)return null;
+      const c=JSON.parse(raw);
+      return (c&&typeof c==='object')?c:null;
+    }catch(e){console.warn('ingest cache unreadable',e);return null;}
+  }
+  cacheHas(c,bucket){return !!(c&&c[bucket]&&Object.keys(c[bucket]).length)}
+  applyCache(all,c){
+    for(const r of Object.values(c.daily||{})){
+      const f=all[(r.client||'').toLowerCase()];if(!f||!r.d)continue;
+      f.daily.push({d:r.d,seg:this.segId(f,r.seg),
+        calls:r.calls||0,contacts:r.contacts||0,leads:r.leads||0,
+        denom:(f.convTotalsDenom==='denom'&&r.denom!=null)?r.denom:null,
+        listSize:r.listSize==null?null:r.listSize,
+        contactsCampaign:null,stlSec:r.stlSec==null?null:r.stlSec,hours:r.hours==null?null:r.hours});
+    }
+    for(const r of Object.values(c.hourly||{})){
+      const f=all[(r.client||'').toLowerCase()];if(!f||!r.d)continue;
+      const o=this.detailRow(f,r.d,this.segId(f,r.seg));
+      o.hours=o.hours||{};
+      for(const m of ['contacts','calls','leads'])if(r[m])o.hours[m]=r[m];
+    }
+    for(const r of Object.values(c.reps||{})){
+      const f=all[(r.client||'').toLowerCase()];if(!f||!r.d||!r.rep)continue;
+      this.detailRow(f,r.d,this.segId(f,r.seg)).reps.push([r.rep,
+        r.calls==null?null:r.calls,r.contacts==null?null:r.contacts,r.leads||0]);
+    }
+    for(const r of Object.values(c.branches||{})){
+      const f=all[(r.client||'').toLowerCase()];if(!f||!r.d||!r.branch)continue;
+      f.branchRows=f.branchRows||[];
+      f.branchRows.push({d:r.d,seg:this.segId(f,r.seg),branch:r.branch,leads:r.leads||0});
+    }
+    for(const k in all)all[k].daily.sort((a,b)=>a.d<b.d?-1:1);
+  }
+  componentDidMount(){
+    Promise.all([fetch('data/clients.json').then(r=>r.json()),
+      fetch('data/all_clients_daily.csv').then(r=>r.text()),
+      fetch('data/hourly.csv').then(r=>r.ok?r.text():'').catch(()=>''),
+      fetch('data/reps.csv').then(r=>r.ok?r.text():'').catch(()=>''),
+      fetch('data/branches.csv').then(r=>r.ok?r.text():'').catch(()=>'')])
+      .then(([cfg,csv,hourly,reps,branches])=>{
+        // Tonight's ingest wins per bucket; the committed CSVs are the fallback (and what a TV loads).
+        const cache=this.readCache();
+        const all=this.buildFromCsv(cfg,this.cacheHas(cache,'daily')?'':csv);
+        if(!this.cacheHas(cache,'hourly'))this.buildHourly(all,hourly);
+        if(!this.cacheHas(cache,'reps'))this.buildReps(all,reps);
+        if(!this.cacheHas(cache,'branches'))this.buildBranches(all,branches);
+        if(cache)this.applyCache(all,cache);
+        this._live=this.cacheHas(cache,'daily');
+        let mx='';
+        for(const k in all)for(const r of all[k].daily)if((r.calls||r.leads)&&r.d>mx)mx=r.d;
+        this._hasData=!!mx;
+        this._anchorIso=mx||new Date().toISOString().slice(0,10);
+        this._anchor=new Date(this._anchorIso+'T00:00:00Z');
+        this.setState({data:all});
+      }).catch(e=>console.error('data load failed',e));
+    this._activity=()=>{this._lastAct=Date.now(); if(this.state.auto)this.setState({auto:false});};
+    ['pointerdown','wheel','keydown'].forEach(e=>window.addEventListener(e,this._activity,true));
+    this._lastAct=Date.now();
+    this._tick=setInterval(()=>this.idleTick(),1000);
+  }
+  componentWillUnmount(){
+    clearInterval(this._tick);
+    ['pointerdown','wheel','keydown'].forEach(e=>window.removeEventListener(e,this._activity,true));
+  }
+  idleTick(){
+    if(!(this.props.autoRotate??true)||!this.state.data)return;
+    const now=Date.now();
+    if(!this.state.auto){
+      if(now-this._lastAct>(this.props.idleSeconds??45)*1000){this._step=0;this.setState({auto:true});this.applyStep(0);}
+    }else if(now-(this._lastStepAt||0)>=(this.props.rotateSeconds??12)*1000){
+      this._step=((this._step||0)+1)%Component.STEPS.length;this.applyStep(this._step);
+    }
+  }
+  applyStep(i){
+    this._lastStepAt=Date.now();const s=Component.STEPS[i];
+    if(s.grid)this.closeDrill();
+    else this.setState({expanded:s.c,tab:s.t,branch:null,rep:null,exRange:this.state.ranges[s.c]});
+  }
+  expandTo(cid,o){
+    const els=this.getEls();const KEYS=['ohs','se','agn','a1g'];const rects={};
+    for(const k of KEYS)if(els['panel_'+k])rects[k]=els['panel_'+k].getBoundingClientRect();
+    const wasGrid=!this.state.expanded;
+    this.setState({expanded:cid,tab:o.tab||'overview',branch:o.branch||null,rep:o.rep||null,exRange:this.state.ranges[cid]});
+    if(wasGrid)this.afterRender(()=>{
+      const e2=this.getEls();if(!e2.drill)return false;
+      if(rects[cid])this.flip(e2.drill,rects[cid]);
+      for(const k of KEYS)if(k!==cid&&e2['rail_'+k]&&rects[k])this.flip(e2['rail_'+k],rects[k]);
+      return true;
+    });
+  }
+
+  bounds(key){
+    const A=this._anchor||new Date();const DAY=864e5;
+    const iso=t=>new Date(t).toISOString().slice(0,10);const T=A.getTime();
+    const dow=(A.getUTCDay()+6)%7;
+    switch(key){
+      case 'today':return[iso(T),iso(T)];
+      case 'yesterday':return[iso(T-DAY),iso(T-DAY)];
+      case 'this_week':return[iso(T-dow*DAY),iso(T)];
+      case 'last_week':return[iso(T-(dow+7)*DAY),iso(T-(dow+1)*DAY)];
+      case 'this_month':return[iso(Date.UTC(A.getUTCFullYear(),A.getUTCMonth(),1)),iso(T)];
+      case 'last_month':return[iso(Date.UTC(A.getUTCFullYear(),A.getUTCMonth()-1,1)),iso(Date.UTC(A.getUTCFullYear(),A.getUTCMonth(),0))];
+      case 'last_30':return[iso(T-29*DAY),iso(T)];
+      default:return[iso(T-89*DAY),iso(T)];
+    }
+  }
+  segName(file,id){
+    if(!id)return 'Pre-split aggregate';
+    const s=(file.segments||[]).find(x=>x.id===id);
+    return s?s.name:id;
+  }
+  branchName(file,id){
+    const b=(file.branches||[]).find(x=>x.id===id);
+    return b?b.name:id;
+  }
+
+  // KPI aggregation: `daily` rows only. Rep/branch/heat come from `detail` rows.
+  agg(cid,rangeKey,seg,branch,rep){
+    const f=this.state.data[cid];const [s,e]=this.bounds(rangeKey);
+    const out={calls:0,contacts:0,leads:0,denom:0,contactsCamp:0,listBySeg:new Map(),
+      stlW:0,stlC:0,hoursSum:null,daily:new Map(),segs:new Map(),reps:new Map(),branches:new Map(),
+      heat:Array.from({length:7},()=>new Array(14).fill(0)),skippedDays:new Set(),repFilter:false,rows:0};
+    for(const r of f.daily||[]){
+      if(r.d<s||r.d>e)continue;
+      if(seg&&r.seg!==seg){if(!r.seg)out.skippedDays.add(r.d);continue;}
+      out.rows++;
+      out.calls+=r.calls||0;out.contacts+=r.contacts||0;out.leads+=r.leads||0;
+      if(r.denom)out.denom+=r.denom;
+      if(r.contactsCampaign)out.contactsCamp+=r.contactsCampaign;
+      if(r.listSize!=null){const cur=out.listBySeg.get(r.seg);if(!cur||r.d>cur.d)out.listBySeg.set(r.seg,{d:r.d,v:r.listSize});}
+      if(r.stlSec!=null&&r.calls){out.stlW+=r.stlSec*r.calls;out.stlC+=r.calls;}
+      if(r.hours!=null)out.hoursSum=(out.hoursSum||0)+r.hours;
+      let dd=out.daily.get(r.d);if(!dd){dd={d:r.d,calls:0,contacts:0,leads:0};out.daily.set(r.d,dd);}
+      dd.calls+=r.calls||0;dd.contacts+=r.contacts||0;dd.leads+=r.leads||0;
+      let sg=out.segs.get(r.seg);
+      if(!sg){sg={id:r.seg,name:this.segName(f,r.seg),calls:0,contacts:0,leads:0,denom:0,contactsCamp:0,list:0,stlW:0,stlC:0};out.segs.set(r.seg,sg);}
+      sg.calls+=r.calls||0;sg.contacts+=r.contacts||0;sg.leads+=r.leads||0;
+      if(r.denom)sg.denom+=r.denom;
+      if(r.contactsCampaign)sg.contactsCamp+=r.contactsCampaign;
+      if(r.listSize!=null)sg.list=r.listSize;
+      if(r.stlSec!=null&&r.calls){sg.stlW+=r.stlSec*r.calls;sg.stlC+=r.calls;}
+    }
+    const metric=f.heatMetric||'contacts';
+    for(const r of f.detail||[]){
+      if(r.d<s||r.d>e)continue;
+      if(seg&&r.seg!==seg)continue;
+      if(branch&&r.branch!==branch)continue;
+      const rows=r.reps||[];
+      let rowCalls=0;for(const rp of rows)rowCalls+=rp[1]||0;
+      let selCalls=0;
+      for(const rp of rows){
+        if(rep&&rp[0]!==rep)continue;
+        selCalls+=rp[1]||0;
+        let x=out.reps.get(rp[0]);
+        if(!x){x={name:rp[0],calls:null,contacts:null,leads:0,stlW:0,stlC:0};out.reps.set(rp[0],x);}
+        if(rp[1]!=null)x.calls=(x.calls||0)+rp[1];
+        if(rp[2]!=null)x.contacts=(x.contacts||0)+rp[2];
+        x.leads+=rp[3]||0;
+        if(rp.length>4&&rp[4]!=null){x.stlW+=rp[4]*(rp[1]||0);x.stlC+=rp[1]||0;}
+        if(r.branch){
+          let b=out.branches.get(r.branch);
+          if(!b){b={id:r.branch,name:this.branchName(f,r.branch),calls:0,contacts:0,leads:0,stlW:0,stlC:0};out.branches.set(r.branch,b);}
+          b.calls+=rp[1]||0;b.contacts+=rp[2]||0;b.leads+=rp[3]||0;
+          if(rp.length>4&&rp[4]!=null){b.stlW+=rp[4]*(rp[1]||0);b.stlC+=rp[1]||0;}
+        }
+      }
+      const share=rep?(rowCalls?selCalls/rowCalls:0):1;
+      const arr=(r.hours&&(r.hours[metric]||r.hours.calls))||null;
+      if(share>0&&arr){
+        const wd=(new Date(r.d+'T00:00:00Z').getUTCDay()+6)%7;
+        for(let h=0;h<14;h++)out.heat[wd][h]+=(arr[h]||0)*share;
+      }
+    }
+    for(const b of f.branchRows||[]){
+      if(b.d<s||b.d>e)continue;
+      if(seg&&b.seg!==seg)continue;
+      if(branch&&b.branch!==branch)continue;
+      let x=out.branches.get(b.branch);
+      if(!x){x={id:b.branch,name:b.branch,calls:null,contacts:null,leads:0,stlW:0,stlC:0};out.branches.set(b.branch,x);}
+      x.leads+=b.leads||0;
+    }
+    if(rep){
+      const rp=out.reps.get(rep);
+      out.repFilter=true;
+      if(rp){out.calls=rp.calls;out.contacts=rp.contacts;out.leads=rp.leads;out.stlW=rp.stlW;out.stlC=rp.stlC;}
+      else {out.calls=0;out.contacts=0;out.leads=0;out.stlW=0;out.stlC=0;}
+    }
+    return out;
+  }
+  // ConversionTotals: leads / latest list size per segment (never summed across dates).
+  convTotals(f,a){
+    if(a.repFilter)return null;
+    let den=0;
+    if(f.convTotalsDenom==='denom')den=a.denom;
+    else for(const x of a.listBySeg.values())den+=x.v;
+    return den?a.leads/den*100:null;
+  }
+  // ConversionContacts: leads / campaign-level contacts reached (AGN: calls).
+  convContacts(f,a){
+    let den;
+    if(a.repFilter)den=a.contacts;
+    else if(f.convContactsDenom==='calls')den=a.calls;
+    else den=a.contactsCamp||a.contacts;
+    return den?a.leads/den*100:null;
+  }
+  // Leads ÷ dial attempts. Not shown for AGN, whose Denom is quotes and already carries list conversion.
+  convDialed(f,a){
+    if(f.convTotalsDenom==='denom'||a.repFilter)return null;
+    return a.denom?a.leads/a.denom*100:null;
+  }
+  pct(v,dp){return v==null?'—':v.toFixed(dp==null?1:dp)+'%'}
+  dash(v){return v==null?'—':this.fmt(v)}
+  fmtStl(s){return s<120?s+'s':Math.round(s/60)+'m'}
+  fmt(n){return (n||0).toLocaleString('en-US')}
+  fmtDate(d){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const t=new Date(d+'T00:00:00Z');return m[t.getUTCMonth()]+' '+t.getUTCDate();}
+  rangeLabel(k){const r=Component.RANGES.find(x=>x[0]===k);return r?r[1]:k}
+  stlColor(s,cfg){const t=this.props.stlTargetSec??60;
+    if(s<=t)return cfg.dark?'#5FD68B':'#1B9E55';
+    if(s<=t*1.4)return cfg.dark?'#F2B75B':'#D98A1F';
+    return cfg.dark?'#FF837A':'#C8352E';}
+  pts(arr,W,H,P){
+    if(!arr.length)return'';
+    const a=arr.length===1?[arr[0],arr[0]]:arr;const max=Math.max(...a,1);
+    return a.map((v,i)=>((P+i*(W-2*P)/(a.length-1)).toFixed(1)+','+(H-P-(v/max)*(H-2*P)).toFixed(1))).join(' ');
+  }
+  area(arr,W,H,P){
+    const p=this.pts(arr,W,H,P);if(!p)return'';
+    return 'M'+P+','+(H-P)+' L'+p.split(' ').join(' L')+' L'+(W-P)+','+(H-P)+' Z';
+  }
+  // Contractual target strip. actualPct is null until the campaign-level tracker is wired.
+  targetVals(f){
+    const t=f&&f.target;
+    if(!t||t.pct==null)return{actual:'—',note:'NO TARGET SET',barW:'0%',
+      source:'No contractual target recorded for this client.'};
+    if(t.actualPct==null)return{actual:'—',note:'TARGET '+t.pct.toFixed(1)+'%',barW:'0%',
+      source:'Campaign-level tracker not yet wired — measures all 3 guaranteed dial passes, not a daily rate.'};
+    return{actual:t.actualPct.toFixed(1)+'%',note:'OF '+t.pct.toFixed(1)+'% TARGET',
+      barW:Math.max(2,Math.min(100,Math.round(t.actualPct/t.pct*100)))+'%',
+      source:'Measured across all 3 guaranteed dial passes.'};
+  }
+
+  panel(cid){
+    const cfg=Component.CFG[cid];const st=this.state;const range=st.ranges[cid];const seg=st.segs[cid]||'';
+    const base={range,seg,
+      setRange:e=>this.setState({ranges:{...st.ranges,[cid]:e.target.value}}),
+      setSeg:e=>this.setState({segs:{...st.segs,[cid]:e.target.value}}),
+      expand:()=>this.expandTo(cid,{}),
+      calls:'—',contacts:'—',quotes:'—',leads:'—',convTotals:'—',convContacts:'—',hours:'—',
+      stl:'—',stlColor:cfg.ink,segNote:'',convLabel:'CONVERSION',statLabel:'INTERNAL',branchLabel:'',hasBranches:false,goBranches:()=>{},
+      targetActual:'—',targetNote:'',targetBarW:'0%',
+      hasTop:false,topName:'',topLeads:'',
+      hasConv:false,noConv:true,convMissing:'LOADING'};
+    const f=st.data&&st.data[cid];if(!f)return base;
+    base.convLabel=f.convLabel||'CONVERSION';base.statLabel=f.statLabel||'INTERNAL';base.segNote=f.note||'';
+    const tv=this.targetVals(f);
+    base.targetActual=tv.actual;base.targetNote=tv.note;base.targetBarW=tv.barW;
+    const a=this.agg(cid,range,seg,null,null);
+    if(a.rows){base.calls=this.fmt(a.calls);base.leads=this.fmt(a.leads);
+      base.contacts=f.convContactsDenom==='calls'?'—':this.fmt(a.contacts);}
+    base.quotes=a.denom?this.fmt(a.denom):'—';
+    const ct=this.convTotals(f,a);
+    base.convTotals=this.pct(ct);base.hasConv=ct!=null;base.noConv=ct==null;
+    base.convMissing=!a.rows?'NO DATA IN THIS RANGE'
+      :(f.convTotalsDenom==='denom'?'AWAITING QUOTES TOUCHED':'AWAITING LIST SIZE');
+    base.convContacts=this.pct(this.convContacts(f,a));
+    const top=[...a.reps.values()].sort((x,y)=>y.leads-x.leads)[0];
+    if(top&&top.leads>0){base.hasTop=true;base.topName=top.name;base.topLeads=this.fmt(top.leads)+' leads';}
+    if(a.hoursSum!=null)base.hours=this.fmt(Math.round(a.hoursSum));
+    if(a.stlC){const s=Math.round(a.stlW/a.stlC);base.stl=this.fmtStl(s);base.stlColor=this.stlColor(s,cfg);}
+    if(seg&&a.skippedDays.size)base.segNote=a.skippedDays.size+' pre-split day'+(a.skippedDays.size===1?'':'s')+' excluded (no segment before Aug 18)';
+    if(cid==='se'&&(f.branches||[]).length){base.hasBranches=true;base.branchLabel=f.branches.length+' BRANCHES';base.goBranches=()=>this.expandTo('se',{tab:'camps'});}
+    return base;
+  }
+  railCards(){
+    const d=this.state.data;if(!d)return[];
+    return ['ohs','se','agn','a1g'].map(cid=>{
+      const cfg=Component.CFG[cid];const a=this.agg(cid,this.state.exRange,this.state.segs[cid]||'',null,null);
+      const act=this.state.expanded===cid;
+      return {name:d[cid].name,leads:a.rows?(this.fmt(a.leads)+' leads'):'No data in range',go:()=>this.expandTo(cid,{}),
+        ref:this.getRef('rail_'+cid),
+        bg:act?cfg.bg:'#FFFFFF',ink:act?cfg.ink:'#3A4254',
+        border:act?('2px solid '+cfg.accent):'2px solid rgba(15,25,60,.08)',dot:cfg.accent};
+    });
+  }
+  exVals(){
+    const cid=this.state.expanded;const d=this.state.data;if(!cid||!d)return{};
+    const cfg=Component.CFG[cid];const f=d[cid];const st=this.state;
+    const seg=st.segs[cid]||'';const {branch,rep}=st;const range=st.exRange;
+    const a=this.agg(cid,range,seg,branch,rep);
+    const target=this.props.stlTargetSec??60;
+    const segList=f.segments||[];
+    const ex={name:f.name,tag:cid==='agn'?'A DRIVENBRANDS COMPANY':'',
+      bg:cfg.bg,ink:cfg.ink,sub:cfg.sub,accent:cfg.accent,soft:cfg.soft,
+      card:cfg.dark?'rgba(255,255,255,.055)':'rgba(15,25,60,.045)',
+      line:cfg.dark?'rgba(255,255,255,.14)':'rgba(15,25,60,.11)',
+      hasBranch:!!branch,branchName:branch?this.branchName(f,branch):'',clearBranch:()=>this.setState({branch:null}),
+      hasRep:!!rep,repName:rep||'',clearRep:()=>this.setState({rep:null}),
+      seg,hasSegPicker:segList.length>1,
+      segOpts:[{v:'',label:'Both campaigns'}].concat(segList.map(s=>({v:s.id,label:s.name}))),
+      setSeg:e=>this.setState({segs:{...st.segs,[cid]:e.target.value}}),
+      contactsLabel:f.contactsLabel||'CONTACTS',
+      totalsLabel:f.convTotalsDenom==='denom'?'LEADS/QUOTES':'LEADS/LIST',
+      statLabel:f.statLabel||'INTERNAL',
+      calls:a.rows?this.dash(a.calls):'—',leads:a.rows?this.dash(a.leads):'—',
+      contacts:(f.convContactsDenom==='calls'||!a.rows)?'—':this.dash(a.contacts),
+      convTotals:this.pct(this.convTotals(f,a)),convContacts:this.pct(this.convContacts(f,a)),
+      rangeLabel:this.rangeLabel(range)};
+    const cd=this.convDialed(f,a);
+    ex.hasDialed=cd!=null;ex.convDialed=this.pct(cd);
+    ex.dialed=a.denom?this.fmt(a.denom):'—';
+    const tv=this.targetVals(f);
+    ex.targetTitle=(f.target&&f.target.label?f.target.label:'CONTRACTUAL TARGET').toUpperCase();
+    ex.targetActual=tv.actual;ex.targetNote=tv.note;ex.targetBarW=tv.barW;ex.targetSource=tv.source;
+    ex.hasStl=a.stlC>0;
+    if(ex.hasStl){const s=Math.round(a.stlW/a.stlC);ex.stl=this.fmtStl(s);ex.stlColor=this.stlColor(s,cfg);
+      ex.stlBarW=Math.min(100,Math.round(s/(target*2)*100))+'%';
+      ex.stlOnTarget=s<=target?'ON TARGET':'OVER TARGET';}
+    ex.stlArt=!!(ex.hasStl&&!cfg.dark);
+    // Rep, branch and heatmap views each need their own feed; a tab only appears once its data exists.
+    const det=f.detail||[];
+    const hasHeat=det.some(r=>r.hours);
+    const hasReps=det.some(r=>r.reps&&r.reps.length);
+    const isSE=cid==='se'&&a.branches.size>0;
+    ex.hasReps=hasReps;
+    const tabs=[['overview','OVERVIEW'],['trend','TREND']];
+    if(hasReps)tabs.push(['reps','BY REP']);
+    if(hasHeat)tabs.push(['heat','HEATMAP']);
+    if(isSE)tabs.push(['camps','BRANCHES']);
+    else if(segList.length>1)tabs.push(['camps','CAMPAIGNS']);
+    const cur=tabs.some(t=>t[0]===this.state.tab)?this.state.tab:'overview';
+    ex.tabs=tabs.map(([k,label])=>({label,go:()=>this.setState({tab:k}),
+      bg:k===cur?cfg.accent:'transparent',ink:k===cur?(cfg.dark?'#0E1B2C':'#FFFFFF'):cfg.sub,
+      bd:k===cur?cfg.accent:(cfg.dark?'rgba(255,255,255,.25)':'rgba(15,25,60,.18)')}));
+    ex.tabOverview=cur==='overview';ex.tabReps=cur==='reps';ex.tabTrend=cur==='trend';ex.tabHeat=cur==='heat';ex.tabCamps=cur==='camps';
+    ex.campsLabelUpper=isSE?'BRANCH':'CAMPAIGN';
+    const daily=[...a.daily.values()].sort((x,y)=>x.d<y.d?-1:1);
+    const W=800,H=240,P=16;const lv=daily.map(v=>v.leads),cv=daily.map(v=>v.calls);
+    ex.leadsPts=this.pts(lv,W,H,P);ex.callsPts=this.pts(cv,W,H,P);ex.areaPath=this.area(lv,W,H,P);
+    ex.hasTrend=daily.length>1;ex.noTrend=daily.length<2;
+    ex.trendNote=daily.length===1?('Only one day of data in this range · '+this.fmtDate(daily[0].d)):'No data in this range';
+    ex.x0=daily.length?this.fmtDate(daily[0].d):'';ex.x1=daily.length?this.fmtDate(daily[daily.length-1].d):'';
+    ex.maxLeads=daily.length?this.fmt(Math.max(...lv,0)):'—';ex.maxCalls=daily.length?this.fmt(Math.max(...cv,0)):'—';
+    ex.dots=[];
+    if(lv.length>=2&&lv.length<=32){
+      const mx=Math.max(...lv,1);
+      ex.dots=lv.map((v,i)=>({
+        d:'M'+(P+i*(W-2*P)/(lv.length-1)).toFixed(1)+','+(H-P-(v/mx)*(H-2*P)).toFixed(1)+' l0,0.001',
+        delay:(0.15+i*(0.75/lv.length)).toFixed(2)+'s'}));
+    }
+    const reps=[...a.reps.values()].sort((x,y)=>y.leads-x.leads);
+    const maxL=Math.max(...reps.map(r=>r.leads),1);
+    ex.reps=reps.slice(0,16).map((r,i)=>{
+      const dn=f.convContactsDenom==='calls'?r.calls:r.contacts;
+      return{rank:i+1,name:r.name,calls:this.dash(r.calls),contacts:this.dash(r.contacts),leads:this.fmt(r.leads),
+        conv:dn?((r.leads/dn*100).toFixed(1)+'%'):'—',stl:r.stlC?Math.round(r.stlW/r.stlC)+'s':'—',
+        barW:Math.max(2,Math.round(r.leads/maxL*100))+'%',
+        go:()=>this.setState({rep:r.name,tab:'overview'}),
+        hl:r.name===rep?cfg.soft:'transparent'};});
+    ex.topMini=reps.slice(0,3).map((r,i)=>({rank:i+1,name:r.name,leads:this.fmt(r.leads)}));
+    // CAMPAIGNS table reads segment rows; BRANCHES table reads detail rows.
+    let rows;
+    if(isSE){
+      rows=[...a.branches.values()].map(b=>({id:b.id,name:b.name,calls:b.calls,contacts:b.contacts,leads:b.leads,stlW:b.stlW,stlC:b.stlC,
+        pick:()=>{},active:false}));
+      ex.campsNote='Branch leads come from the Appointment Report, which carries no dial or contact counts per branch.';
+    }else{
+      const aAll=this.agg(cid,range,'',branch,rep);
+      rows=[...aAll.segs.values()].map(s=>({id:s.id,name:s.name,calls:s.calls,contacts:s.contacts,leads:s.leads,stlW:s.stlW,stlC:s.stlC,
+        pick:()=>this.setState({segs:{...st.segs,[cid]:s.id},tab:'overview'}),active:s.id===seg}));
+      ex.campsNote='Pre-split rows have no campaign segment and are listed separately. Click a campaign to filter the drill-down to it.';
+    }
+    rows.sort((x,y)=>y.leads-x.leads);
+    const maxCL=Math.max(...rows.map(c=>c.leads),1);
+    ex.camps=rows.map((c,i)=>{
+      const dn=f.convContactsDenom==='calls'?c.calls:c.contacts;
+      return{rank:i+1,name:c.name,
+        calls:c.calls==null?'—':this.fmt(c.calls),contacts:c.contacts==null?'—':this.fmt(c.contacts),
+        leads:this.fmt(c.leads),
+        conv:dn?((c.leads/dn*100).toFixed(1)+'%'):'—',stl:c.stlC?this.fmtStl(Math.round(c.stlW/c.stlC)):'—',
+        barW:Math.max(2,Math.round(c.leads/maxCL*100))+'%',
+        go:c.pick,hl:c.active?cfg.soft:'transparent'};});
+    const hmax=Math.max(...a.heat.flat(),1);const rgb=cfg.heatRGB;
+    const dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const mlabel=(f.heatMetric||'contacts')==='contacts'?'contacts reached':(f.heatMetric==='leads'?'leads':'calls placed');
+    ex.heatRows=a.heat.map((row,i)=>({label:dows[i],cells:row.map(v=>({
+      bg:v?('rgba('+rgb+','+(0.12+0.88*v/hmax).toFixed(2)+')'):(cfg.dark?'rgba(255,255,255,.05)':'rgba(15,25,60,.05)'),
+      t:Math.round(v)+' '+mlabel}))}));
+    ex.heatNote='Contacts reached by weekday and hour, 7am–8pm CST · darker = more'+(rep?' · approximated for rep filter':'');
+    return ex;
+  }
+  renderVals(){
+    const d=this.state.data;
+    return {
+      gridOn:!this.state.expanded, exOn:!!this.state.expanded, auto:this.state.auto,
+      collapse:()=>this.closeDrill(),
+      drillRef:this.getRef('drill'),
+      ohsPanelRef:this.getRef('panel_ohs'),sePanelRef:this.getRef('panel_se'),
+      agnPanelRef:this.getRef('panel_agn'),a1gPanelRef:this.getRef('panel_a1g'),
+      updatedLabel:d?(this._hasData?('Data through '+this.fmtDate(this._anchorIso)+(this._live?' · from your last ingest':'')):'Awaiting August data'):'Loading data…',
+      exRange:this.state.exRange, setExRange:e=>this.setState({exRange:e.target.value}),
+      stlTargetLabel:(this.props.stlTargetSec??60)+'s',
+      ohs:this.panel('ohs'), se:this.panel('se'), agn:this.panel('agn'), a1g:this.panel('a1g'),
+      rail:this.railCards(), ex:this.exVals()
+    };
+  }
+}
+</script>
+</body>
+</html>

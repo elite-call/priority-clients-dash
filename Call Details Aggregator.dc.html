@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./campaign-rules.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E6E8EC;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#2A5CE6}a:hover{color:#1C46C2}
+button{font-family:'Barlow',sans-serif;cursor:pointer}
+select{font-family:'Barlow',sans-serif}
+@keyframes agFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:28px 24px 60px">
+  <div style="max-width:1060px;margin:0 auto">
+
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <div style="font:800 27px/1.1 Barlow,sans-serif;color:#17233F">Call Details aggregator</div>
+      <div style="font:700 11px Barlow,sans-serif;letter-spacing:.2em;color:#7A8394">RUNS ENTIRELY IN THIS BROWSER</div>
+    </div>
+    <div style="font:400 15px/1.55 Barlow,sans-serif;color:#4A5468;margin-top:10px;max-width:680px;text-wrap:pretty">
+      Drop a DialedIn Call Details export in. Nothing is uploaded — the file is read locally and only the
+      aggregates leave this page, as two small CSVs for the dashboard's <b>data</b> folder.
+    </div>
+
+    <div ref="{{ dropRef }}" style="margin-top:20px;background:#FFFFFF;border:2px dashed {{ dropBorder }};border-radius:14px;padding:34px 24px;text-align:center;transition:border-color .15s,background .15s">
+      <div style="font:700 17px Barlow,sans-serif;color:#17233F">{{ dropTitle }}</div>
+      <div style="font:600 13px Barlow,sans-serif;color:#7A8394;margin-top:7px">{{ dropSub }}</div>
+      <label style="display:inline-block;margin-top:16px;font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2A5CE6;border-radius:999px;padding:10px 22px;cursor:pointer">
+        CHOOSE FILE<input type="file" accept=".csv,.txt" onChange="{{ onPick }}" style="display:none">
+      </label>
+    </div>
+
+    <sc-if value="{{ busy }}">
+      <div style="margin-top:16px;background:#FFFFFF;border-radius:12px;padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#2A5CE6">
+          <span>{{ busyLabel }}</span><span>{{ progressPct }}</span>
+        </div>
+        <div style="height:8px;margin-top:9px;border-radius:999px;background:rgba(15,25,60,.09)">
+          <div style="height:100%;width:{{ progressPct }};background:#2A5CE6;border-radius:999px"></div>
+        </div>
+        <div style="font:600 12.5px Barlow,sans-serif;color:#7A8394;margin-top:8px">{{ rowsSoFar }}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ ready }}">
+    <div style="animation:agFade .3s ease">
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px">
+        <div style="background:#FFFFFF;border-radius:12px;padding:14px 16px">
+          <div style="font:800 26px/1 Barlow,sans-serif;color:#17233F">{{ statRows }}</div>
+          <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">CALL ROWS READ</div>
+        </div>
+        <div style="background:#FFFFFF;border-radius:12px;padding:14px 16px">
+          <div style="font:800 26px/1 Barlow,sans-serif;color:#17233F">{{ statDays }}</div>
+          <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">DATES · {{ statRange }}</div>
+        </div>
+        <div style="background:#FFFFFF;border-radius:12px;padding:14px 16px">
+          <div style="font:800 26px/1 Barlow,sans-serif;color:#17233F">{{ statCamps }}</div>
+          <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">CAMPAIGNS FOUND</div>
+        </div>
+        <div style="background:#FFFFFF;border-radius:12px;padding:14px 16px">
+          <div style="font:800 26px/1 Barlow,sans-serif;color:#17233F">{{ statStatuses }}</div>
+          <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">DISPOSITIONS</div>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+        <div style="font:800 17px Barlow,sans-serif;color:#17233F">1 · Campaigns to clients</div>
+        <div style="font:600 13px/1.5 Barlow,sans-serif;color:#7A8394;margin-top:5px;max-width:640px">
+          Read from the campaign name. Anything left unassigned is excluded from both outputs.
+        </div>
+        <div style="display:grid;grid-template-columns:2.4fr 1fr 1.2fr .7fr;gap:9px 12px;align-items:center;margin-top:16px;font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">
+          <div>CAMPAIGN</div><div>CLIENT</div><div>SEGMENT</div><div style="text-align:right">CALLS</div>
+        </div>
+        <sc-for list="{{ campRows }}" as="c" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:2.4fr 1fr 1.2fr .7fr;gap:9px 12px;align-items:center;padding:7px 0;border-top:1px solid rgba(15,25,60,.07)">
+            <div style="font:600 13.5px Barlow,sans-serif;color:#17233F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+            <select value="{{ c.client }}" onChange="{{ c.setClient }}" style="font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:8px;padding:5px 7px">
+              <option value="">— skip —</option><option value="OHS">OHS</option><option value="SE">SE</option><option value="A1G">A1G</option><option value="AGN">AGN</option>
+            </select>
+            <select value="{{ c.seg }}" onChange="{{ c.setSeg }}" style="font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:8px;padding:5px 7px">
+              <sc-for list="{{ c.segOpts }}" as="so" hint-placeholder-count="2">
+                <option value="{{ so.v }}">{{ so.label }}</option>
+              </sc-for>
+            </select>
+            <div style="font:700 13px Barlow,sans-serif;color:#4A5468;text-align:right">{{ c.calls }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+        <div style="font:800 17px Barlow,sans-serif;color:#17233F">2 · What counts as a contact, and as a lead</div>
+        <div style="font:600 13px/1.5 Barlow,sans-serif;color:#7A8394;margin-top:5px;max-width:660px">
+          <b style="color:#17233F">Set per client</b>, because the convention differs per client — OHS subtracts
+          Already Completed to get net contacts, and unticking it here leaves the others untouched. Dialer
+          codes and machine detections start excluded, human outcomes are contacts, enrolments and payment
+          updates are also leads. Every count in both outputs follows these two columns.
+        </div>
+        <sc-if value="{{ multiClient }}">
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center">
+            <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-right:2px">EDITING</div>
+            <sc-for list="{{ clientTabs }}" as="ct" hint-placeholder-count="2">
+              <button onClick="{{ ct.go }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.08em;padding:7px 15px;border-radius:999px;background:{{ ct.bg }};color:{{ ct.ink }};border:1.5px solid {{ ct.bd }}">{{ ct.label }}</button>
+            </sc-for>
+            <button onClick="{{ copyToAll }}" style="margin-left:6px;font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#2A5CE6;background:rgba(42,92,230,.08);border:1.5px solid rgba(42,92,230,.28);border-radius:999px;padding:7px 14px">COPY THIS SET TO THE OTHERS</button>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+          <button onClick="{{ contactAll }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#2A5CE6;background:rgba(42,92,230,.08);border:1.5px solid rgba(42,92,230,.28);border-radius:999px;padding:7px 14px">ALL CONTACTS</button>
+          <button onClick="{{ contactNone }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#5A6472;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:999px;padding:7px 14px">CLEAR CONTACTS</button>
+          <button onClick="{{ leadNone }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#5A6472;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:999px;padding:7px 14px">CLEAR LEADS</button>
+          <button onClick="{{ resetDefaults }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#5A6472;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:999px;padding:7px 14px">RESET TO SUGGESTED</button>
+        </div>
+        <div style="display:grid;grid-template-columns:2.6fr .7fr .7fr .7fr;gap:9px 12px;align-items:center;margin-top:16px;font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">
+          <div>DISPOSITION · {{ activeClient }}</div><div style="text-align:right">CALLS</div><div style="text-align:center">CONTACT</div><div style="text-align:center">LEAD</div>
+        </div>
+        <sc-for list="{{ statusRows }}" as="s" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:2.6fr .7fr .7fr .7fr;gap:9px 12px;align-items:center;padding:6px 0;border-top:1px solid rgba(15,25,60,.07);background:{{ s.hl }}">
+            <div style="font:600 13.5px Barlow,sans-serif;color:#17233F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</div>
+            <div style="font:700 13px Barlow,sans-serif;color:#4A5468;text-align:right">{{ s.calls }}</div>
+            <div style="text-align:center"><input type="checkbox" checked="{{ s.isContact }}" onChange="{{ s.toggleContact }}" style="width:17px;height:17px;accent-color:#2A5CE6;cursor:pointer"></div>
+            <div style="text-align:center"><input type="checkbox" checked="{{ s.isLead }}" onChange="{{ s.toggleLead }}" style="width:17px;height:17px;accent-color:#1B9E55;cursor:pointer"></div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#17233F;color:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+        <div style="font:800 17px Barlow,sans-serif">3 · Download</div>
+        <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:14px">
+          <div><div style="font:800 30px/1 Barlow,sans-serif">{{ outCalls }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#9BA6BC;margin-top:5px">CALLS MAPPED</div></div>
+          <div><div style="font:800 30px/1 Barlow,sans-serif;color:#7FA8FF">{{ outContacts }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#9BA6BC;margin-top:5px">CONTACTS</div></div>
+          <div><div style="font:800 30px/1 Barlow,sans-serif;color:#7BE0A8">{{ outLeads }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#9BA6BC;margin-top:5px">LEADS</div></div>
+          <div><div style="font:800 30px/1 Barlow,sans-serif">{{ outRows }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#9BA6BC;margin-top:5px">OUTPUT ROWS</div></div>
+          <sc-if value="{{ hasSkipped }}">
+            <div><div style="font:800 30px/1 Barlow,sans-serif;color:#FFB4A8">{{ outSkipped }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#9BA6BC;margin-top:5px">CALLS SKIPPED</div></div>
+          </sc-if>
+        </div>
+        <div style="display:flex;gap:11px;margin-top:20px;flex-wrap:wrap">
+          <button onClick="{{ dlHourly }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD hourly.csv</button>
+          <button onClick="{{ dlDaily }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFD437;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD daily-from-calls.csv</button>
+        </div>
+        <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:16px;max-width:660px">
+          <b style="color:#FFFFFF">hourly.csv</b> → put in <b style="color:#FFFFFF">data/</b>, replacing the existing file. Feeds the heatmap.<br>
+          <b style="color:#FFFFFF">daily-from-calls.csv</b> → Calls, Contacts and Leads per day per campaign, in the same
+          column order as <b style="color:#FFFFFF">all_clients_daily.csv</b>. Paste the rows in, then add Denom,
+          ListSize, AvgSTLsec and AGN's own rows by hand.
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+        <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">PREVIEW · daily-from-calls.csv</div>
+        <div style="font:600 12px/1.7 'Barlow',monospace;color:#4A5468;margin-top:10px;white-space:pre;overflow-x:auto">{{ preview }}</div>
+      </div>
+
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ failed }}">
+      <div style="margin-top:16px;background:#FFF1EF;border:1.5px solid rgba(200,53,46,.3);border-radius:12px;padding:16px 18px">
+        <div style="font:700 13px Barlow,sans-serif;color:#C8352E">{{ errorMsg }}</div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;hourStart&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:7,&quot;min&quot;:0,&quot;max&quot;:23,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Hour buckets&quot;},&quot;hourEnd&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:20,&quot;min&quot;:0,&quot;max&quot;:23,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Hour buckets&quot;}}">
+class Component extends DCLogic {
+  // contact/lead hold explicit overrides only, keyed by client then disposition; anything absent
+  // falls back to defContact/defLead. The convention differs per client, so the tables are per client.
+  state = {stage:'idle',progress:0,rowsRead:0,fileName:'',error:'',
+    campaigns:[],statuses:[],map:{},contact:{},lead:{},activeClient:'',dragOver:false};
+
+  // Dialer codes and machine detections are not a person answering.
+  static NOT_CONTACT = /^cr_|^agent|answering\s*machine|^amd|pamd|unavailable|wrong number|busy|no answer|voicemail|fax|abandon|dead air|dropped|not in service|disconnected number|invalid|do not call|dnc/i;
+  static LEADISH = /enroll|payment updated|payment update|ach |ach$|sold|sale\b|signed|upgrade/i;
+  static CLIENTS = ['OHS','SE','A1G','AGN'];
+  static SEGS = {OHS:['FP5','PROB ENROLL'],SE:['ACTIVE','RENEW'],A1G:['PRIORITY','STL'],AGN:['STL']};
+
+  // Defaults live in campaign-rules.js alongside the campaign rules; overrides here win.
+  defContact(client,stat){
+    const D=(typeof window!=='undefined')&&window.CallDispositions;
+    return D?D.defaultContact(client,stat):true;
+  }
+  defLead(client,stat){
+    const D=(typeof window!=='undefined')&&window.CallDispositions;
+    return D?D.defaultLead(client,stat):false;
+  }
+  isContact(client,stat){
+    const o=(this.state.contact||{})[client]||{};
+    return (stat in o)?!!o[stat]:this.defContact(client,stat);
+  }
+  isLead(client,stat){
+    const o=(this.state.lead||{})[client]||{};
+    return (stat in o)?!!o[stat]:this.defLead(client,stat);
+  }
+  setFlag(kind,client,stat,val){
+    const base={...(this.state[kind]||{})};
+    base[client]={...(base[kind]||base[client]||{}),[stat]:val};
+    this.setState({[kind]:base});
+  }
+  clientsPresent(){
+    const s=new Set();
+    for(const k in this.state.map){const m=this.state.map[k];if(m&&m.client&&m.seg)s.add(m.client);}
+    return Component.CLIENTS.filter(c=>s.has(c));
+  }
+  clientStatuses(client){
+    const m=new Map();
+    for(const [k,n] of (this._cube||new Map())){
+      const p=k.split('\u0001');const mp=this.state.map[p[1]];
+      if(!mp||mp.client!==client||!mp.seg)continue;
+      m.set(p[2],(m.get(p[2])||0)+n);
+    }
+    return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(([name,calls])=>({name,calls}));
+  }
+  hourStart(){return Math.max(0,Math.min(23,this.props.hourStart??7))}
+  hourEnd(){return Math.max(this.hourStart(),Math.min(23,this.props.hourEnd??20))}
+  buckets(){return this.hourEnd()-this.hourStart()+1}
+
+  componentDidMount(){
+    const el=this._drop;if(!el)return;
+    this._over=e=>{e.preventDefault();if(!this.state.dragOver)this.setState({dragOver:true});};
+    this._leave=e=>{e.preventDefault();if(this.state.dragOver)this.setState({dragOver:false});};
+    this._drop_=e=>{e.preventDefault();this.setState({dragOver:false});
+      const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)this.run(f);};
+    el.addEventListener('dragover',this._over);
+    el.addEventListener('dragleave',this._leave);
+    el.addEventListener('drop',this._drop_);
+    window.addEventListener('dragover',e=>e.preventDefault());
+    window.addEventListener('drop',e=>e.preventDefault());
+  }
+
+  // Substring rules live in campaign-rules.js so every page in the project reads the same logic.
+  detect(name){
+    const R=(typeof window!=='undefined')&&window.CampaignRules;
+    if(!R)return {client:'',seg:''};
+    const r=R.parse(name);
+    return {client:r.client,seg:r.segment};
+  }
+
+  async run(file){
+    this.setState({stage:'parsing',progress:0,rowsRead:0,fileName:file.name,error:''});
+    const cube=new Map(),camps=new Map(),stats=new Map();
+    let hdr=null,iDate=-1,iCamp=-1,iStat=-1,rows=0,bad=0,minD='9999-99-99',maxD='0000-00-00';
+    const HS=this.hourStart(),HE=this.hourEnd();
+    const onRow=cells=>{
+      if(!hdr){
+        hdr=cells.map(s=>s.trim().replace(/^"|"$/g,''));
+        iDate=hdr.indexOf('Date');iCamp=hdr.indexOf('Campaign');iStat=hdr.indexOf('Call Status');
+        if(iDate<0||iCamp<0||iStat<0)throw new Error('Expected columns Date, Campaign and Call Status — found: '+hdr.slice(0,8).join(', '));
+        return;
+      }
+      const ts=cells[iDate]||'';
+      const m=ts.match(/^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+      if(!m){bad++;return;}
+      rows++;
+      let h=+m[4];const ap=(m[7]||'').toUpperCase();
+      if(ap==='PM'&&h!==12)h+=12;else if(ap==='AM'&&h===12)h=0;
+      const d=m[3]+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+      if(d<minD)minD=d;if(d>maxD)maxD=d;
+      const hb=Math.max(HS,Math.min(HE,h));
+      const camp=(cells[iCamp]||'').trim()||'(blank)';
+      const stat=(cells[iStat]||'').trim()||'(blank)';
+      const k=d+'\u0001'+camp+'\u0001'+stat+'\u0001'+hb;
+      cube.set(k,(cube.get(k)||0)+1);
+      camps.set(camp,(camps.get(camp)||0)+1);
+      stats.set(stat,(stats.get(stat)||0)+1);
+    };
+    // Character-level parser: quoted fields may hold commas and newlines.
+    let cur='',row=[],q=false;
+    const push=text=>{
+      for(let i=0;i<text.length;i++){
+        const c=text[i];
+        if(q){
+          if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}
+          else cur+=c;
+        }else if(c==='"')q=true;
+        else if(c===','){row.push(cur);cur='';}
+        else if(c==='\n'){row.push(cur);cur='';onRow(row);row=[];}
+        else if(c!=='\r')cur+=c;
+      }
+    };
+    try{
+      let read=0;
+      if(file.stream&&window.TextDecoderStream){
+        const rd=file.stream().pipeThrough(new TextDecoderStream()).getReader();
+        for(;;){
+          const {done,value}=await rd.read();
+          if(done)break;
+          push(value);read+=value.length;
+          this.setState({progress:Math.min(99,Math.round(read/file.size*100)),rowsRead:rows});
+          await new Promise(r=>setTimeout(r,0));
+        }
+      }else{
+        push(await file.text());
+      }
+      if(cur!==''||row.length){row.push(cur);onRow(row);}
+      if(!rows)throw new Error('No rows with a readable date were found in '+file.name);
+
+      const map={};const present=new Set();
+      const campaigns=[...camps.entries()].sort((a,b)=>b[1]-a[1]).map(([name,calls])=>{
+        const det=this.detect(name);map[name]=det;
+        if(det.client&&det.seg)present.add(det.client);
+        return {name,calls};});
+      const statuses=[...stats.entries()].sort((a,b)=>b[1]-a[1]).map(([name,calls])=>({name,calls}));
+      const active=Component.CLIENTS.find(c=>present.has(c))||'';
+      this._cube=cube;this._range=[minD,maxD];this._bad=bad;this._rows=rows;
+      this.setState({stage:'ready',progress:100,rowsRead:rows,campaigns,statuses,map,
+        contact:{},lead:{},activeClient:active});
+    }catch(err){
+      console.error(err);
+      this.setState({stage:'error',error:err&&err.message?err.message:String(err)});
+    }
+  }
+
+  // Re-aggregate the cube under the current mappings.
+  build(){
+    const out=new Map();
+    const HS=this.hourStart(),N=this.buckets();
+    const {map}=this.state;
+    let calls=0,contacts=0,leads=0,skipped=0;
+    for(const [k,n] of (this._cube||new Map())){
+      const [d,camp,stat,hb]=k.split('\u0001');
+      const m=map[camp];
+      if(!m||!m.client||!m.seg){skipped+=n;continue;}
+      const key=d+'|'+m.client+'|'+m.seg;
+      let o=out.get(key);
+      if(!o){o={d,client:m.client,seg:m.seg,calls:0,contacts:0,leads:0,
+        hCalls:new Array(N).fill(0),hContacts:new Array(N).fill(0),hLeads:new Array(N).fill(0)};out.set(key,o);}
+      const i=Math.max(0,Math.min(N-1,+hb-HS));
+      o.calls+=n;o.hCalls[i]+=n;calls+=n;
+      if(this.isContact(m.client,stat)){o.contacts+=n;o.hContacts[i]+=n;contacts+=n;}
+      if(this.isLead(m.client,stat)){o.leads+=n;o.hLeads[i]+=n;leads+=n;}
+    }
+    const rows=[...out.values()].sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.client<b.client?-1:a.client>b.client?1:(a.seg<b.seg?-1:1)));
+    return {rows,calls,contacts,leads,skipped};
+  }
+  hourCols(){
+    const c=[];for(let h=this.hourStart();h<=this.hourEnd();h++)c.push('H'+String(h).padStart(2,'0'));
+    return c;
+  }
+  hourlyCsv(){
+    const {rows}=this.build();
+    const out=['Date,Client,CampaignSegment,Metric,'+this.hourCols().join(',')];
+    for(const r of rows){
+      out.push([r.d,r.client,r.seg,'contacts'].concat(r.hContacts).join(','));
+      out.push([r.d,r.client,r.seg,'calls'].concat(r.hCalls).join(','));
+      out.push([r.d,r.client,r.seg,'leads'].concat(r.hLeads).join(','));
+    }
+    return out.join('\n')+'\n';
+  }
+  dailyCsv(){
+    const {rows}=this.build();
+    const out=['Date,Client,CampaignSegment,Calls,Contacts,Leads,Denom,ListSize,AvgSTLsec,PayrollHours'];
+    for(const r of rows)out.push([r.d,r.client,r.seg,r.calls,r.contacts,r.leads,'','','',''].join(','));
+    return out.join('\n')+'\n';
+  }
+  download(name,text){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));
+    a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+  }
+  fmt(n){return (n||0).toLocaleString('en-US')}
+  fmtDate(d){
+    const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const t=new Date(d+'T00:00:00Z');
+    return isNaN(t)?d:(m[t.getUTCMonth()]+' '+t.getUTCDate());
+  }
+
+  renderVals(){
+    const st=this.state;
+    const v={
+      dropRef:el=>{this._drop=el;},
+      onPick:e=>{const f=e.target.files&&e.target.files[0];if(f)this.run(f);},
+      busy:st.stage==='parsing',ready:st.stage==='ready',failed:st.stage==='error',
+      errorMsg:st.error,
+      dropBorder:st.dragOver?'#2A5CE6':'rgba(15,25,60,.2)',
+      dropTitle:st.fileName?st.fileName:'Drop the Call Details CSV here',
+      dropSub:st.stage==='ready'?'Loaded · drop another file to start over':'A 64MB, 245,000-row export is fine — it is read in chunks',
+      busyLabel:'READING '+(st.fileName||'FILE'),
+      progressPct:st.progress+'%',
+      rowsSoFar:this.fmt(st.rowsRead)+' call rows so far',
+      contactAll:()=>{const cl=st.activeClient;const o={};
+        for(const s of this.clientStatuses(cl))o[s.name]=true;
+        this.setState({contact:{...st.contact,[cl]:o}});},
+      contactNone:()=>{const cl=st.activeClient;const o={};
+        for(const s of this.clientStatuses(cl))o[s.name]=false;
+        this.setState({contact:{...st.contact,[cl]:o}});},
+      leadNone:()=>{const cl=st.activeClient;const o={};
+        for(const s of this.clientStatuses(cl))o[s.name]=false;
+        this.setState({lead:{...st.lead,[cl]:o}});},
+      resetDefaults:()=>{const cl=st.activeClient;
+        const c={...st.contact},l={...st.lead};delete c[cl];delete l[cl];
+        this.setState({contact:c,lead:l});},
+      hourCols:this.hourCols().join(' '),
+      copyToAll:()=>{const cl=st.activeClient;const c={...st.contact},l={...st.lead};
+        const src=this.clientStatuses(cl);
+        for(const other of this.clientsPresent()){
+          if(other===cl)continue;
+          const co={...(c[other]||{})},lo={...(l[other]||{})};
+          for(const s of src){co[s.name]=this.isContact(cl,s.name);lo[s.name]=this.isLead(cl,s.name);}
+          c[other]=co;l[other]=lo;
+        }
+        this.setState({contact:c,lead:l});}
+    };
+    if(st.stage!=='ready')return v;
+
+    const b=this.build();
+    v.statRows=this.fmt(this._rows);
+    v.statDays=this.fmt(new Set([...this._cube.keys()].map(k=>k.split('\u0001')[0])).size);
+    v.statRange=this.fmtDate(this._range[0])+' – '+this.fmtDate(this._range[1]);
+    v.statCamps=this.fmt(st.campaigns.length);
+    v.statStatuses=this.fmt(st.statuses.length);
+
+    v.campRows=st.campaigns.map(c=>{
+      const m=st.map[c.name]||{client:'',seg:''};
+      const segs=Component.SEGS[m.client]||[];
+      return {name:c.name,calls:this.fmt(c.calls),client:m.client,seg:m.seg,
+        segOpts:[{v:'',label:segs.length?'— pick —':'—'}].concat(segs.map(s=>({v:s,label:s}))),
+        setClient:e=>{const cl=e.target.value;const s=Component.SEGS[cl]||[];
+          const keep=s.indexOf(m.seg)>=0?m.seg:(s.length===1?s[0]:'');
+          this.setState({map:{...st.map,[c.name]:{client:cl,seg:keep}}});},
+        setSeg:e=>this.setState({map:{...st.map,[c.name]:{client:m.client,seg:e.target.value}}})};
+    });
+
+    const present=this.clientsPresent();
+    const active=present.indexOf(st.activeClient)>=0?st.activeClient:(present[0]||'');
+    v.activeClient=active;
+    v.hasClients=present.length>0;
+    v.multiClient=present.length>1;
+    v.clientTabs=present.map(c=>({label:c,go:()=>this.setState({activeClient:c}),
+      bg:c===active?'#17233F':'#FFFFFF',ink:c===active?'#FFFFFF':'#5A6472',
+      bd:c===active?'#17233F':'rgba(15,25,60,.18)'}));
+    v.statusRows=this.clientStatuses(active).map(s=>{
+      const isC=this.isContact(active,s.name),isL=this.isLead(active,s.name);
+      return {name:s.name,calls:this.fmt(s.calls),isContact:isC,isLead:isL,
+        hl:isL?'rgba(27,158,85,.07)':(isC?'transparent':'rgba(15,25,60,.03)'),
+        toggleContact:()=>{
+          const c={...st.contact},l={...st.lead};
+          c[active]={...(c[active]||{}),[s.name]:!isC};
+          if(isC)l[active]={...(l[active]||{}),[s.name]:false};
+          this.setState({contact:c,lead:l});},
+        toggleLead:()=>{
+          const c={...st.contact},l={...st.lead};
+          l[active]={...(l[active]||{}),[s.name]:!isL};
+          if(!isL)c[active]={...(c[active]||{}),[s.name]:true};
+          this.setState({contact:c,lead:l});}};});
+
+    v.outCalls=this.fmt(b.calls);v.outContacts=this.fmt(b.contacts);v.outLeads=this.fmt(b.leads);
+    v.outRows=this.fmt(b.rows.length);v.outSkipped=this.fmt(b.skipped);v.hasSkipped=b.skipped>0;
+    v.dlHourly=()=>this.download('hourly.csv',this.hourlyCsv());
+    v.dlDaily=()=>this.download('daily-from-calls.csv',this.dailyCsv());
+    v.preview=this.dailyCsv().split('\n').slice(0,9).join('\n')||'—';
+    return v;
+  }
+}
+</script>
+</body>
+</html>

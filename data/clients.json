@@ -1,0 +1,101 @@
+{
+  "updated": "",
+  "clients": {
+    "ohs": {
+      "name": "Oncourse Home Solutions",
+      "segments": [
+        {
+          "id": "fp5",
+          "name": "FP5"
+        },
+        {
+          "id": "prob_enroll",
+          "name": "PROB ENROLL"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "FP5 list conversion · 3-pass",
+        "pct": 14,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "NET CONTACTS",
+      "note": "Net contacts = contacts less Already Completed, per the AM sheet",
+      "statLabel": "INTERNAL · LEADS/NET CONTACTS"
+    },
+    "se": {
+      "name": "Service Experts",
+      "segments": [
+        {
+          "id": "active",
+          "name": "ACTIVE"
+        },
+        {
+          "id": "renew",
+          "name": "RENEW"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "ACTIVE list conversion · 3-pass",
+        "pct": 11.5,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "CONTACTS",
+      "note": "",
+      "statLabel": "INTERNAL · LEADS/CONTACTS"
+    },
+    "agn": {
+      "name": "Auto Glass Now",
+      "segments": [
+        {
+          "id": "stl",
+          "name": "STL"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "calls",
+      "convTotalsDenom": "denom",
+      "target": {
+        "label": "Quote conversion",
+        "pct": 22,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/QUOTES",
+      "contactsLabel": "CONTACTS (NOT TRACKED)",
+      "note": "Team total · no campaign split at source",
+      "statLabel": "INTERNAL · LEADS/CALLS"
+    },
+    "a1g": {
+      "name": "A1 Garage Door Service",
+      "segments": [
+        {
+          "id": "priority",
+          "name": "PRIORITY"
+        },
+        {
+          "id": "stl",
+          "name": "STL"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "PRIORITY list conversion · 3-pass",
+        "pct": 9,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "CONTACTS",
+      "note": "",
+      "statLabel": "INTERNAL · LEADS/CONTACTS"
+    }
+  }
+}

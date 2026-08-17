@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elite Call · Priority Client Reporting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;background:#E6E8EC;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px">
+  <div style="width:100%;max-width:760px">
+    <img src="uploads/emblem_horizontal_signature.png" alt="Elite Call" style="height:38px;display:block">
+    <div style="font:700 12px Barlow,sans-serif;letter-spacing:.22em;color:#5A6472;margin-top:18px">PRIORITY CLIENT REPORTING</div>
+    <div style="font:800 34px/1.15 Barlow,sans-serif;color:#17233F;margin-top:10px">Three screens</div>
+
+    <div style="display:grid;gap:12px;margin-top:26px">
+      <a href="Priority%20Client%20Dashboard.dc.html" style="display:block;background:#FFFFFF;border-radius:14px;padding:20px 22px;text-decoration:none;box-shadow:0 1px 5px rgba(15,25,60,.07)">
+        <div style="font:800 19px Barlow,sans-serif;color:#17233F">Dashboard</div>
+        <div style="font:600 13.5px/1.5 Barlow,sans-serif;color:#5A6472;margin-top:5px">The wall display. Four client panels, campaign and date filters, drill-down, auto-cycling when idle.</div>
+      </a>
+      <a href="Daily%20Data%20Ingestion.dc.html" style="display:block;background:#FFFFFF;border-radius:14px;padding:20px 22px;text-decoration:none;box-shadow:0 1px 5px rgba(15,25,60,.07)">
+        <div style="font:800 19px Barlow,sans-serif;color:#17233F">Nightly ingestion</div>
+        <div style="font:600 13.5px/1.5 Barlow,sans-serif;color:#5A6472;margin-top:5px">Drop in Campaign Summary, Appointment Report, Agent Summary and Call Details. Feeds the dashboard directly.</div>
+      </a>
+      <a href="Call%20Details%20Aggregator.dc.html" style="display:block;background:#FFFFFF;border-radius:14px;padding:20px 22px;text-decoration:none;box-shadow:0 1px 5px rgba(15,25,60,.07)">
+        <div style="font:800 19px Barlow,sans-serif;color:#17233F">Call Details aggregator</div>
+        <div style="font:600 13.5px/1.5 Barlow,sans-serif;color:#5A6472;margin-top:5px">For when the contact definition needs tuning per client. Turns a 64MB export into a small hourly file.</div>
+      </a>
+    </div>
+
+    <div style="font:600 12.5px/1.7 Barlow,sans-serif;color:#7A8394;margin-top:22px">
+      Ingested data lives in the browser you ingest it in. To move a day's numbers to another machine or to
+      the wall display, export the CSVs from the ingestion screen and commit them to <b>data/</b>.
+    </div>
+  </div>
+</div>
+</body>
+</html>

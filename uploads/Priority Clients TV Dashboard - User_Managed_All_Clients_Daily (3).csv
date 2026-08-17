@@ -1,0 +1,26 @@
+Date,Client,CampaignSegment,Calls,Contacts,Leads,Denom,ConversionTotals,ConversionContacts,AvgSTLsec,UpdatedAt
+8/4/2026,AGN,,542,,47,439,10.7%,,662,2026-08-17T16:32:48.921Z
+8/5/2026,AGN,,443,,65,493,13.2%,,609,2026-08-17T16:32:50.134Z
+8/6/2026,AGN,,505,,54,506,10.7%,,1456,2026-08-17T16:32:48.252Z
+8/7/2026,AGN,,310,,57,388,14.7%,,555,2026-08-17T16:32:44.227Z
+8/8/2026,AGN,,0,,0,,,,,2026-08-17T16:32:46.693Z
+8/9/2026,AGN,,0,,0,,,,,2026-08-17T16:32:47.626Z
+8/10/2026,AGN,,475,,69,625,11.0%,,840,2026-08-17T16:32:45.890Z
+8/11/2026,AGN,,767,,57,467,12.2%,,781,2026-08-17T16:32:49.901Z
+8/12/2026,AGN,,612,,77,556,13.8%,,188,2026-08-17T16:32:50.368Z
+8/13/2026,AGN,,864,,69,531,13.0%,,253,2026-08-17T16:32:48.676Z
+8/14/2026,OHS,,70,48,15,669,2.2%,,,2026-08-17T16:32:44.500Z
+8/14/2026,SE,,682,456,54,5361,1.0%,,,2026-08-17T16:32:44.864Z
+8/14/2026,A1G,,569,199,38,6553,0.6%,,,2026-08-17T16:32:45.156Z
+8/14/2026,AGN,,654,,54,400,13.5%,,,2026-08-17T16:32:45.432Z
+8/15/2026,AGN,,0,,0,,,,,2026-08-17T16:32:47.217Z
+8/16/2026,AGN,,0,,0,,,,,2026-08-17T16:32:47.953Z
+8/17/2026,SE,,161,99,13,937,1.4%,,,2026-08-17T16:32:46.142Z
+8/17/2026,A1G,,170,45,8,1923,0.4%,,,2026-08-17T16:32:46.432Z
+8/18/2026,A1G,STL,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,
+8/18/2026,A1G,PRIORITY,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,
+8/18/2026,AGN,STL,,,,,F/G,F/D,,
+8/18/2026,OHS,FP5,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,
+8/18/2026,OHS,PROB ENROLL,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,
+8/18/2026,SE,ACTIVE,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,
+8/18/2026,SE,RENEW,,,,,F/(column E of CampaignSummary),F/(column O of CampaignSummary),,

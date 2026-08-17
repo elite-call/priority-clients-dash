@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./campaign-rules.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E6E8EC;font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#2A5CE6}a:hover{color:#1C46C2}
+button{font-family:'Barlow',sans-serif;cursor:pointer}
+select,input{font-family:'Barlow',sans-serif}
+@keyframes inFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:26px 24px 70px">
+  <div style="max-width:1080px;margin:0 auto">
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="font:800 27px/1.1 Barlow,sans-serif;color:#17233F">Nightly data ingestion</div>
+      <div style="font:700 11px Barlow,sans-serif;letter-spacing:.2em;color:#7A8394">LOCAL CACHE · NOTHING UPLOADS</div>
+      <div style="flex:1"></div>
+      <a href="Priority Client Dashboard.dc.html" style="font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:999px;padding:9px 17px;text-decoration:none">◂ BACK TO DASHBOARD</a>
+    </div>
+    <div style="font:400 15px/1.55 Barlow,sans-serif;color:#4A5468;margin-top:10px;max-width:700px;text-wrap:pretty">
+      Drop tonight's exports in. Each report is recognised by its columns, campaigns resolve to a client
+      and segment by the standard substring rules, and everything accumulates here until you export the
+      files the dashboard reads.
+    </div>
+
+    <div ref="{{ dropRef }}" style="margin-top:20px;background:#FFFFFF;border:2px dashed {{ dropBorder }};border-radius:14px;padding:30px 24px;text-align:center">
+      <div style="font:700 17px Barlow,sans-serif;color:#17233F">Drop tonight's CSVs here</div>
+      <div style="font:600 13px/1.6 Barlow,sans-serif;color:#7A8394;margin-top:7px">
+        Campaign Summary · Appointment Report (Leads) · Agent Summary by Campaign · Call Details<br>
+        also takes hourly.csv from the aggregator, daily backfill tables, and a cache JSON to restore
+      </div>
+      <label style="display:inline-block;margin-top:16px;font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2A5CE6;border-radius:999px;padding:10px 22px;cursor:pointer">
+        CHOOSE FILES<input type="file" accept=".csv,.txt,.json" multiple="{{ true }}" onChange="{{ onPick }}" style="display:none">
+      </label>
+    </div>
+
+    <sc-if value="{{ busy }}">
+      <div style="margin-top:14px;background:#FFFFFF;border-radius:12px;padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#2A5CE6">
+          <span>{{ busy }}</span><span>{{ progressPct }}</span>
+        </div>
+        <div style="height:8px;margin-top:9px;border-radius:999px;background:rgba(15,25,60,.09)">
+          <div style="height:100%;width:{{ progressPct }};background:#2A5CE6;border-radius:999px"></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasPending }}">
+    <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px;animation:inFade .25s ease">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font:800 17px Barlow,sans-serif;color:#17233F">Ready to ingest</div>
+        <div style="font:600 13px Barlow,sans-serif;color:#7A8394">{{ pendingNote }}</div>
+      </div>
+      <sc-for list="{{ pending }}" as="p" hint-placeholder-count="2">
+        <div style="border-top:1px solid rgba(15,25,60,.07);padding:13px 0;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:230px">
+            <div style="font:700 14px Barlow,sans-serif;color:#17233F;word-break:break-all">{{ p.name }}</div>
+            <div style="font:600 12px Barlow,sans-serif;color:{{ p.tint }};margin-top:4px">{{ p.typeLabel }}</div>
+            <div style="font:600 12px Barlow,sans-serif;color:{{ p.detailInk }};margin-top:3px">{{ p.detail }}</div>
+          </div>
+          <sc-if value="{{ p.needsDate }}">
+            <input type="date" value="{{ p.date }}" onChange="{{ p.setDate }}" style="font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.2);border-radius:8px;padding:6px 8px">
+          </sc-if>
+          <sc-if value="{{ p.needsClient }}">
+            <select value="{{ p.client }}" onChange="{{ p.setClient }}" style="font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.2);border-radius:8px;padding:6px 8px">
+              <option value="">— client —</option><option value="OHS">OHS</option><option value="SE">SE</option><option value="A1G">A1G</option><option value="AGN">AGN</option>
+            </select>
+          </sc-if>
+          <sc-if value="{{ p.needsClient }}">
+            <select value="{{ p.seg }}" onChange="{{ p.setSeg }}" style="font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.2);border-radius:8px;padding:6px 8px">
+              <sc-for list="{{ p.segOpts }}" as="so" hint-placeholder-count="2">
+                <option value="{{ so.v }}">{{ so.label }}</option>
+              </sc-for>
+            </select>
+          </sc-if>
+          <button onClick="{{ p.drop }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#5A6472;background:#FFFFFF;border:1.5px solid rgba(15,25,60,.18);border-radius:999px;padding:7px 13px">REMOVE</button>
+        </div>
+      </sc-for>
+      <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;align-items:center">
+        <button onClick="{{ ingestAll }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2A5CE6;border:none;border-radius:999px;padding:11px 22px">INGEST {{ readyCount }}</button>
+        <div style="font:600 12.5px Barlow,sans-serif;color:#C8352E">{{ blockedNote }}</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ hasLog }}">
+    <div style="background:#FFFFFF;border-radius:14px;padding:18px 22px;margin-top:14px">
+      <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">LAST RUN</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+        <sc-for list="{{ log }}" as="l" hint-placeholder-count="2">
+          <div style="font:600 13px/1.45 Barlow,sans-serif;color:{{ l.color }}">{{ l.text }}</div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font:800 17px Barlow,sans-serif;color:#17233F">Cache</div>
+        <div style="font:600 13px Barlow,sans-serif;color:#7A8394">{{ cacheRange }}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px">
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cDaily }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">DAILY ROWS</div></div>
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cHourly }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">HOURLY ROWS</div></div>
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cReps }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">REP ROWS</div></div>
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cBranch }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">BRANCH ROWS</div></div>
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cSize }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">CACHE SIZE</div></div>
+      </div>
+      <sc-if value="{{ hasCoverage }}">
+      <div style="margin-top:20px">
+        <div style="font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">COVERAGE · D DAILY · R REPS · B BRANCHES · H HOURLY</div>
+        <div style="display:grid;grid-template-columns:90px repeat(4,1fr);gap:6px;margin-top:11px;font:700 10px Barlow,sans-serif;letter-spacing:.1em;color:#7A8394">
+          <div></div><div>OHS</div><div>SE</div><div>A1G</div><div>AGN</div>
+        </div>
+        <sc-for list="{{ coverage }}" as="cv" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:90px repeat(4,1fr);gap:6px;align-items:center;padding:2px 0">
+            <div style="font:600 12.5px Barlow,sans-serif;color:#4A5468">{{ cv.label }}</div>
+            <sc-for list="{{ cv.cells }}" as="cc" hint-placeholder-count="4">
+              <div style="display:flex;gap:3px">
+                <sc-for list="{{ cc.marks }}" as="mk" hint-placeholder-count="4">
+                  <div style="flex:1;height:18px;border-radius:4px;background:{{ mk.bg }};color:{{ mk.ink }};font:700 9.5px/18px Barlow,sans-serif;text-align:center">{{ mk.k }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+    </div>
+
+    <div style="background:#17233F;color:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+      <div style="font:800 17px Barlow,sans-serif">Export for the dashboard</div>
+      <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:6px;max-width:670px">
+        Each file replaces its namesake in the project's <b style="color:#FFFFFF">data</b> folder. The cache JSON is
+        the backup — drop it back on this page to restore everything.
+      </div>
+      <div style="display:flex;gap:11px;margin-top:18px;flex-wrap:wrap">
+        <button onClick="{{ dlDaily }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.09em;color:#17233F;background:#FFD437;border:none;border-radius:999px;padding:11px 18px">all_clients_daily.csv</button>
+        <button onClick="{{ dlHourly }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.09em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 18px">hourly.csv</button>
+        <button onClick="{{ dlReps }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.09em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 18px">reps.csv</button>
+        <button onClick="{{ dlBranches }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.09em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 18px">branches.csv</button>
+        <button onClick="{{ dlCache }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.09em;color:#FFFFFF;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.3);border-radius:999px;padding:11px 18px">ec-cache.json</button>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:20px;align-items:center;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.14);padding-top:16px">
+        <button onClick="{{ clearCache }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:{{ clearInk }};background:{{ clearBg }};border:1.5px solid {{ clearBd }};border-radius:999px;padding:8px 15px">{{ clearLabel }}</button>
+        <div style="font:600 12px Barlow,sans-serif;color:#9BA6BC">{{ clearNote }}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ failed }}">
+      <div style="margin-top:14px;background:#FFF1EF;border:1.5px solid rgba(200,53,46,.3);border-radius:12px;padding:16px 18px">
+        <div style="font:700 13px Barlow,sans-serif;color:#C8352E">{{ err }}</div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  static KEY='ec_ingest_cache_v1';
+  static TYPES={
+    campaignsummary:{label:'Campaign Summary · daily totals per campaign',tint:'#2A5CE6'},
+    appointments:{label:'Appointment Report (Leads) · one row per lead',tint:'#1B9E55'},
+    agentsummary:{label:'Agent Summary by Campaign · per rep, needs tagging',tint:'#B8860B'},
+    calldetails:{label:'Call Details · hourly buckets',tint:'#7A3FBF'},
+    hourly:{label:'hourly.csv · aggregator output',tint:'#7A3FBF'},
+    dailytable:{label:'Daily table · backfill',tint:'#5A6472'},
+    cachejson:{label:'Cache backup · replaces everything',tint:'#5A6472'}
+  };
+  state={cache:null,pending:[],busy:'',progress:0,log:[],err:'',dragOver:false,armClear:false};
+
+  componentDidMount(){
+    this.setState({cache:this.load()});
+    const el=this._drop;if(!el)return;
+    el.addEventListener('dragover',e=>{e.preventDefault();if(!this.state.dragOver)this.setState({dragOver:true});});
+    el.addEventListener('dragleave',e=>{e.preventDefault();if(this.state.dragOver)this.setState({dragOver:false});});
+    el.addEventListener('drop',e=>{e.preventDefault();this.setState({dragOver:false});
+      const fs=e.dataTransfer&&e.dataTransfer.files;if(fs&&fs.length)this.accept([...fs]);});
+    this._noop=e=>e.preventDefault();
+    window.addEventListener('dragover',this._noop);window.addEventListener('drop',this._noop);
+  }
+  componentWillUnmount(){
+    window.removeEventListener('dragover',this._noop);window.removeEventListener('drop',this._noop);
+  }
+
+  blank(){return {v:1,daily:{},hourly:{},reps:{},branches:{}}}
+  load(){
+    try{const raw=localStorage.getItem(Component.KEY);
+      return raw?Object.assign(this.blank(),JSON.parse(raw)):this.blank();
+    }catch(e){console.warn('cache unreadable, starting fresh',e);return this.blank();}
+  }
+  persist(cache){
+    try{localStorage.setItem(Component.KEY,JSON.stringify(cache));return '';}
+    catch(e){return 'Browser storage is full — export the files, then clear the cache.';}
+  }
+  rules(){return (typeof window!=='undefined'&&window.CampaignRules)||null}
+  disp(){return (typeof window!=='undefined'&&window.CallDispositions)||null}
+
+  splitLine(l){
+    const o=[];let cur='',q=false;
+    for(let i=0;i<l.length;i++){const c=l[i];
+      if(q){if(c==='"'){if(l[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+      else if(c==='"')q=true;else if(c===','){o.push(cur);cur='';}else cur+=c;}
+    o.push(cur);return o;
+  }
+  // Streaming parse; quoted fields may hold commas and newlines (the Notes column does).
+  async stream(file,onRow,onProgress){
+    let cur='',row=[],q=false,read=0;
+    const push=t=>{
+      for(let i=0;i<t.length;i++){const c=t[i];
+        if(q){if(c==='"'){if(t[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+        else if(c==='"')q=true;
+        else if(c===','){row.push(cur);cur='';}
+        else if(c==='\n'){row.push(cur);cur='';onRow(row);row=[];}
+        else if(c!=='\r')cur+=c;}
+    };
+    if(file.stream&&window.TextDecoderStream){
+      const rd=file.stream().pipeThrough(new TextDecoderStream()).getReader();
+      for(;;){const {done,value}=await rd.read();if(done)break;
+        push(value);read+=value.length;
+        if(onProgress)onProgress(Math.min(99,Math.round(read/file.size*100)));
+        await new Promise(r=>setTimeout(r,0));}
+    }else push(await file.text());
+    if(cur!==''||row.length){row.push(cur);onRow(row);}
+  }
+  async rowsOf(file,onProgress){
+    let hdr=null;const out=[];
+    await this.stream(file,cells=>{
+      if(!hdr){hdr=cells.map(s=>s.trim());return;}
+      if(cells.length===1&&!cells[0].trim())return;
+      const o={};hdr.forEach((h,i)=>{o[h]=(cells[i]==null?'':cells[i]).trim();});out.push(o);
+    },onProgress);
+    return out;
+  }
+  num(v){if(v==null)return null;const s=String(v).replace(/[,$%\s]/g,'');return s===''||isNaN(+s)?null:+s;}
+  iso(s){
+    s=(s||'').trim();
+    let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m)return m[3]+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+    m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:'';
+  }
+  hourOf(s){
+    const m=(s||'').match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+    if(!m)return null;
+    let h=+m[1];const ap=(m[3]||'').toUpperCase();
+    if(ap==='PM'&&h!==12)h+=12;else if(ap==='AM'&&h===12)h=0;
+    return h;
+  }
+  fileDates(name){
+    const m=(name||'').match(/(\d{2})-(\d{2})-(\d{4})[_-](\d{2})-(\d{2})-(\d{4})/);
+    return m?[m[3]+'-'+m[1]+'-'+m[2],m[6]+'-'+m[4]+'-'+m[5]]:null;
+  }
+  k(){return [...arguments].join('|')}
+
+  async sniff(file){
+    if(/\.json$/i.test(file.name))return {type:'cachejson'};
+    const head=await file.slice(0,262144).text();
+    const nl=head.indexOf('\n');
+    const cols=this.splitLine(nl<0?head:head.slice(0,nl)).map(s=>s.trim().replace(/^"|"$/g,''));
+    const has=n=>cols.indexOf(n)>=0;
+    let type='';
+    if(has('Call Status')&&has('Attempt'))type='calldetails';
+    else if(has('Appointment')&&has('Campaign'))type='appointments';
+    else if(has('Period')&&has('Total Leads')&&has('Dialed'))type='campaignsummary';
+    else if(has('Rep')&&has('Hours Worked'))type='agentsummary';
+    else if(has('Metric')&&cols.some(c=>/^H\d\d$/i.test(c)))type='hourly';
+    else if(has('Client')&&has('CampaignSegment'))type='dailytable';
+    return {type};
+  }
+  async accept(files){
+    this.setState({busy:'Reading headers',progress:0,err:''});
+    const add=[];
+    for(const f of files){
+      let s={type:''};
+      try{s=await this.sniff(f);}catch(e){console.warn(e);}
+      const dates=this.fileDates(f.name);
+      const single=dates&&dates[0]===dates[1];
+      add.push({id:Math.random().toString(36).slice(2),file:f,name:f.name,type:s.type,dates,
+        date:dates?dates[0]:'',client:'',seg:'',
+        needsDate:s.type==='agentsummary'||(s.type==='campaignsummary'&&!single),
+        needsClient:s.type==='agentsummary'});
+    }
+    this.setState({pending:[...this.state.pending,...add],busy:''});
+  }
+
+  bump(cache,d,client,seg){
+    const key=this.k(d,client,seg);
+    if(!cache.daily[key])cache.daily[key]={d,client,seg,calls:null,contacts:null,leads:null,denom:null,listSize:null,stlSec:null};
+    return cache.daily[key];
+  }
+
+  async doCampaignSummary(cache,p){
+    const R=this.rules();if(!R)throw new Error('campaign-rules.js did not load');
+    const date=p.needsDate?p.date:(p.dates?p.dates[0]:p.date);
+    if(!date)throw new Error('needs a date');
+    const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    const fresh=new Set();let used=0,skipped=0;
+    for(const r of rows){
+      const camp=(r.Campaign||'').trim();
+      if(!camp||/^total$/i.test(camp))continue;
+      const {client,segment}=R.parse(camp);
+      if(!client||!segment){skipped++;continue;}
+      const o=this.bump(cache,date,client,segment),key=this.k(date,client,segment);
+      if(!fresh.has(key)){fresh.add(key);o.calls=0;o.contacts=0;o.leads=0;o.listSize=0;}
+      o.calls+=this.num(r.Dialed)||0;
+      o.contacts+=this.num(r.Contacts)||0;
+      o.leads+=this.num(r['Sale/Lead/App'])||0;
+      o.listSize+=this.num(r['Total Leads'])||0;
+      used++;
+    }
+    // A blank-segment aggregate row for the same day would double-count under "Both campaigns".
+    let dropped=0;
+    for(const key of [...fresh]){
+      const cl=key.split('|')[1],agg=this.k(date,cl,'');
+      if(cache.daily[agg]){delete cache.daily[agg];dropped++;}
+    }
+    return used+' campaigns → '+fresh.size+' segment rows on '+date+
+      (dropped?', replaced '+dropped+' aggregate row'+(dropped===1?'':'s'):'')+
+      (skipped?', '+skipped+' outside the four clients':'');
+  }
+  async doAppointments(cache,p){
+    const R=this.rules();if(!R)throw new Error('campaign-rules.js did not load');
+    const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    const dates=new Set(),freshR=new Set(),freshB=new Set();
+    let leads=0,skipped=0,withBranch=0;
+    for(const r of rows){
+      const d=this.iso(r.Date);if(!d)continue;
+      const {client,segment}=R.parse(r.Campaign||'');
+      if(!client||!segment){skipped++;continue;}
+      dates.add(d);leads++;
+      const rep=(r.Rep||'').trim()||'(unattributed)';
+      const rk=this.k(d,client,segment,rep);
+      if(!cache.reps[rk])cache.reps[rk]={d,client,seg:segment,rep,calls:null,contacts:null,leads:0};
+      if(!freshR.has(rk)){freshR.add(rk);cache.reps[rk].leads=0;}
+      cache.reps[rk].leads++;
+      const br=(r.BranchName||'').trim();
+      if(br){
+        const bk=this.k(d,client,segment,br);
+        if(!cache.branches[bk])cache.branches[bk]={d,client,seg:segment,branch:br,leads:0};
+        if(!freshB.has(bk)){freshB.add(bk);cache.branches[bk].leads=0;}
+        cache.branches[bk].leads++;withBranch++;
+      }
+    }
+    const ds=[...dates].sort();
+    return leads+' leads over '+ds.length+' date'+(ds.length===1?'':'s')+
+      (ds.length?' ('+ds[0]+(ds.length>1?' → '+ds[ds.length-1]:'')+')':'')+
+      ', '+withBranch+' with a branch'+(skipped?', '+skipped+' outside the four clients':'');
+  }
+  async doAgentSummary(cache,p){
+    if(!p.date)throw new Error('needs a date');
+    if(!p.client||!p.seg)throw new Error('needs a client and segment');
+    const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    let n=0;
+    for(const r of rows){
+      const rep=(r.Rep||'').trim();
+      if(!rep||/^total$/i.test(rep))continue;
+      const key=this.k(p.date,p.client,p.seg,rep);
+      if(!cache.reps[key])cache.reps[key]={d:p.date,client:p.client,seg:p.seg,rep,calls:null,contacts:null,leads:null};
+      const o=cache.reps[key];
+      o.calls=this.num(r.Dialed);
+      o.contacts=this.num(r.Contacts);
+      if(o.leads==null)o.leads=this.num(r['Sale/Lead/App']);
+      n++;
+    }
+    return n+' reps for '+p.client+' '+p.seg+' on '+p.date;
+  }
+  async doCallDetails(cache,p){
+    const R=this.rules(),D=this.disp();
+    if(!R||!D)throw new Error('campaign-rules.js did not load');
+    let hdr=null,iD=-1,iC=-1,iS=-1,used=0,skipped=0;
+    const fresh=new Set();
+    await this.stream(p.file,cells=>{
+      if(!hdr){
+        hdr=cells.map(s=>s.trim().replace(/^"|"$/g,''));
+        iD=hdr.indexOf('Date');iC=hdr.indexOf('Campaign');iS=hdr.indexOf('Call Status');
+        if(iD<0||iC<0||iS<0)throw new Error('needs Date, Campaign and Call Status columns');
+        return;
+      }
+      const d=this.iso(cells[iD]),h=this.hourOf(cells[iD]);
+      if(!d||h==null)return;
+      const {client,segment}=R.parse(cells[iC]||'');
+      if(!client||!segment){skipped++;return;}
+      used++;
+      const key=this.k(d,client,segment);
+      if(!fresh.has(key)){
+        fresh.add(key);
+        cache.hourly[key]={d,client,seg:segment,
+          calls:new Array(14).fill(0),contacts:new Array(14).fill(0),leads:new Array(14).fill(0)};
+      }
+      const o=cache.hourly[key],i=Math.max(0,Math.min(13,h-7)),stat=(cells[iS]||'').trim();
+      o.calls[i]++;
+      if(D.defaultContact(client,stat))o.contacts[i]++;
+      if(D.defaultLead(client,stat))o.leads[i]++;
+    },v=>this.setState({progress:v}));
+    return used+' calls → '+fresh.size+' hourly rows'+(skipped?', '+skipped+' outside the four clients':'')+
+      ' · default disposition rules (use the aggregator to control them)';
+  }
+  async doHourly(cache,p){
+    const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    let n=0;
+    for(const r of rows){
+      const d=this.iso(r.Date),client=(r.Client||'').trim().toUpperCase(),seg=(r.CampaignSegment||'').trim().toUpperCase();
+      if(!d||!client||!seg)continue;
+      const metric=(r.Metric||'contacts').trim().toLowerCase();
+      const cols=Object.keys(r).filter(x=>/^H\d\d$/i.test(x)).sort();
+      if(!cols.length)continue;
+      const key=this.k(d,client,seg);
+      if(!cache.hourly[key])cache.hourly[key]={d,client,seg,calls:null,contacts:null,leads:null};
+      cache.hourly[key][metric]=cols.slice(0,14).map(x=>this.num(r[x])||0);
+      n++;
+    }
+    return n+' hourly rows';
+  }
+  async doDailyTable(cache,p){
+    const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    let n=0,skippedAgg=0;
+    for(const r of rows){
+      const d=this.iso(r.Date),client=(r.Client||'').trim().toUpperCase();
+      let seg=(r.CampaignSegment||'').trim().toUpperCase();
+      if(!d||!client)continue;
+      const calls=this.num(r.Calls),contacts=this.num(r.Contacts),leads=this.num(r.Leads);
+      if(calls==null&&contacts==null&&leads==null)continue;
+      // Skip an aggregate row when that day already has segment-split rows for the client.
+      if(!seg&&Object.keys(cache.daily).some(key=>{const o2=cache.daily[key];return o2.d===d&&o2.client===client&&o2.seg;})){skippedAgg++;continue;}
+      const o=this.bump(cache,d,client,seg);
+      if(calls!=null)o.calls=calls;
+      if(contacts!=null)o.contacts=contacts;
+      if(leads!=null)o.leads=leads;
+      const dn=this.num(r.Denom),ls=this.num(r.ListSize),stl=this.num(r.AvgSTLsec);
+      // Denom only means something for AGN (quotes touched). For the others Calls IS the dial count,
+      // so a legacy Denom would put a second, disagreeing dial figure on screen.
+      if(dn!=null&&client==='AGN')o.denom=dn;
+      if(ls!=null)o.listSize=ls;
+      if(stl!=null)o.stlSec=stl;
+      n++;
+    }
+    return n+' daily rows merged'+(skippedAgg?', '+skippedAgg+' aggregate row'+(skippedAgg===1?'':'s')+' skipped (that day is already split by campaign)':'');
+  }
+  async doCacheJson(cache,p){
+    const txt=await p.file.text();
+    const c=JSON.parse(txt);
+    if(!c||typeof c!=='object')throw new Error('not a cache file');
+    const merged=Object.assign(this.blank(),c);
+    for(const bucket of ['daily','hourly','reps','branches'])
+      Object.assign(cache[bucket],merged[bucket]||{});
+    return 'restored '+Object.keys(merged.daily||{}).length+' daily, '+
+      Object.keys(merged.reps||{}).length+' rep, '+Object.keys(merged.hourly||{}).length+' hourly rows';
+  }
+
+  async ingestAll(){
+    const ready=this.state.pending.filter(p=>this.isReady(p));
+    if(!ready.length)return;
+    const cache=JSON.parse(JSON.stringify(this.state.cache||this.blank()));
+    const log=[];
+    for(const p of ready){
+      this.setState({busy:'Ingesting '+p.name,progress:0});
+      try{
+        let msg='';
+        if(p.type==='campaignsummary')msg=await this.doCampaignSummary(cache,p);
+        else if(p.type==='appointments')msg=await this.doAppointments(cache,p);
+        else if(p.type==='agentsummary')msg=await this.doAgentSummary(cache,p);
+        else if(p.type==='calldetails')msg=await this.doCallDetails(cache,p);
+        else if(p.type==='hourly')msg=await this.doHourly(cache,p);
+        else if(p.type==='dailytable')msg=await this.doDailyTable(cache,p);
+        else if(p.type==='cachejson')msg=await this.doCacheJson(cache,p);
+        log.push({text:'✓ '+p.name+' — '+msg,color:'#1B7A45'});
+      }catch(e){
+        console.error(e);
+        log.push({text:'✕ '+p.name+' — '+(e&&e.message?e.message:String(e)),color:'#C8352E'});
+      }
+    }
+    const err=this.persist(cache);
+    const keep=this.state.pending.filter(p=>!this.isReady(p));
+    this.setState({cache,pending:keep,busy:'',progress:0,log,err});
+  }
+  isReady(p){
+    if(!p.type)return false;
+    if(p.needsDate&&!p.date)return false;
+    if(p.needsClient&&(!p.client||!p.seg))return false;
+    return true;
+  }
+
+  csv(header,rows){return [header].concat(rows).join('\n')+'\n'}
+  dailyCsv(){
+    const c=this.state.cache||this.blank();
+    const rows=Object.values(c.daily).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.client<b.client?-1:a.client>b.client?1:(a.seg<b.seg?-1:1)))
+      .map(o=>[o.d,o.client,o.seg,o.calls==null?'':o.calls,o.contacts==null?'':o.contacts,
+        o.leads==null?'':o.leads,o.denom==null?'':o.denom,o.listSize==null?'':o.listSize,
+        o.stlSec==null?'':o.stlSec,''].join(','));
+    return this.csv('Date,Client,CampaignSegment,Calls,Contacts,Leads,Denom,ListSize,AvgSTLsec,PayrollHours',rows);
+  }
+  hourlyCsv(){
+    const c=this.state.cache||this.blank();
+    const cols=[];for(let h=7;h<=20;h++)cols.push('H'+String(h).padStart(2,'0'));
+    const rows=[];
+    for(const o of Object.values(c.hourly).sort((a,b)=>a.d<b.d?-1:1))
+      for(const m of ['contacts','calls','leads'])
+        if(o[m])rows.push([o.d,o.client,o.seg,m].concat(o[m]).join(','));
+    return this.csv('Date,Client,CampaignSegment,Metric,'+cols.join(','),rows);
+  }
+  repsCsv(){
+    const c=this.state.cache||this.blank();
+    const rows=Object.values(c.reps).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.rep<b.rep?-1:1))
+      .map(o=>[o.d,o.client,o.seg,'"'+String(o.rep).replace(/"/g,'""')+'"',
+        o.calls==null?'':o.calls,o.contacts==null?'':o.contacts,o.leads==null?'':o.leads].join(','));
+    return this.csv('Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads',rows);
+  }
+  branchesCsv(){
+    const c=this.state.cache||this.blank();
+    const rows=Object.values(c.branches).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.branch<b.branch?-1:1))
+      .map(o=>[o.d,o.client,o.seg,'"'+String(o.branch).replace(/"/g,'""')+'"',o.leads==null?'':o.leads].join(','));
+    return this.csv('Date,Client,CampaignSegment,Branch,Leads',rows);
+  }
+  download(name,text,mime){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([text],{type:mime||'text/csv'}));
+    a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+  }
+  fmt(n){return (n||0).toLocaleString('en-US')}
+  fmtDate(d){
+    const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const t=new Date(d+'T00:00:00Z');
+    return isNaN(t)?d:(m[t.getUTCMonth()]+' '+t.getUTCDate());
+  }
+
+  renderVals(){
+    const st=this.state,c=st.cache||this.blank();
+    const R=this.rules();
+    const segsFor=cl=>(R&&R.SEGMENTS[cl])||[];
+    const v={
+      dropRef:el=>{this._drop=el;},
+      onPick:e=>{const fs=e.target.files;if(fs&&fs.length)this.accept([...fs]);e.target.value='';},
+      dropBorder:st.dragOver?'#2A5CE6':'rgba(15,25,60,.2)',
+      busy:st.busy,progressPct:st.progress+'%',
+      failed:!!st.err,err:st.err,
+      hasLog:st.log.length>0,log:st.log,
+      hasPending:st.pending.length>0,
+      pending:st.pending.map(p=>{
+        const t=Component.TYPES[p.type];
+        const segs=segsFor(p.client);
+        const bits=[];
+        if(p.dates)bits.push(p.dates[0]===p.dates[1]?('dated '+p.dates[0]):('covers '+p.dates[0]+' → '+p.dates[1]));
+        bits.push(Math.max(1,Math.round(p.file.size/1024))+' KB');
+        let detail=bits.join(' · '),ink='#7A8394';
+        if(!p.type){detail='Unrecognised columns — this is not one of the four reports';ink='#C8352E';}
+        else if(p.type==='campaignsummary'&&p.needsDate){detail='Covers a range; these are totals, so pick the single day it belongs to';ink='#B8860B';}
+        else if(p.type==='agentsummary'){detail='No campaign or date column — tag it';ink='#B8860B';}
+        return {name:p.name,typeLabel:t?t.label:'Unknown report',tint:t?t.tint:'#C8352E',
+          detail,detailInk:ink,
+          needsDate:!!p.needsDate,needsClient:!!p.needsClient,
+          date:p.date,client:p.client,seg:p.seg,
+          segOpts:[{v:'',label:segs.length?'— segment —':'—'}].concat(segs.map(s=>({v:s,label:s}))),
+          setDate:e=>this.setState({pending:st.pending.map(x=>x.id===p.id?{...x,date:e.target.value}:x)}),
+          setClient:e=>{const cl=e.target.value;const ss=segsFor(cl);
+            this.setState({pending:st.pending.map(x=>x.id===p.id?{...x,client:cl,seg:ss.length===1?ss[0]:''}:x)});},
+          setSeg:e=>this.setState({pending:st.pending.map(x=>x.id===p.id?{...x,seg:e.target.value}:x)}),
+          drop:()=>this.setState({pending:st.pending.filter(x=>x.id!==p.id)})};
+      }),
+      ingestAll:()=>this.ingestAll(),
+      dlDaily:()=>this.download('all_clients_daily.csv',this.dailyCsv()),
+      dlHourly:()=>this.download('hourly.csv',this.hourlyCsv()),
+      dlReps:()=>this.download('reps.csv',this.repsCsv()),
+      dlBranches:()=>this.download('branches.csv',this.branchesCsv()),
+      dlCache:()=>this.download('ec-cache.json',JSON.stringify(c),'application/json'),
+      clearCache:()=>{
+        if(!st.armClear){this.setState({armClear:true});setTimeout(()=>{if(this.state.armClear)this.setState({armClear:false});},4000);return;}
+        localStorage.removeItem(Component.KEY);
+        this.setState({cache:this.blank(),armClear:false,log:[{text:'Cache cleared.',color:'#5A6472'}]});
+      },
+      clearLabel:st.armClear?'TAP AGAIN TO CONFIRM':'CLEAR CACHE',
+      clearInk:st.armClear?'#17233F':'#FFB4A8',
+      clearBg:st.armClear?'#FFB4A8':'transparent',
+      clearBd:st.armClear?'#FFB4A8':'rgba(255,180,168,.45)',
+      clearNote:'Export first — this cannot be undone.'
+    };
+    const ready=st.pending.filter(p=>this.isReady(p)).length;
+    const blocked=st.pending.length-ready;
+    v.readyCount=ready===st.pending.length?('ALL '+ready):(ready+' OF '+st.pending.length);
+    v.pendingNote=st.pending.length+' file'+(st.pending.length===1?'':'s')+' queued';
+    v.blockedNote=blocked?(blocked+' still need'+(blocked===1?'s':'')+' attention'):'';
+
+    v.cDaily=this.fmt(Object.keys(c.daily).length);
+    v.cHourly=this.fmt(Object.keys(c.hourly).length);
+    v.cReps=this.fmt(Object.keys(c.reps).length);
+    v.cBranch=this.fmt(Object.keys(c.branches).length);
+    let bytes=0;try{bytes=(localStorage.getItem(Component.KEY)||'').length;}catch(e){bytes=0;}
+    v.cSize=bytes>999999?((bytes/1048576).toFixed(1)+' MB'):(Math.round(bytes/1024)+' KB');
+
+    const dates=new Set();
+    for(const b of ['daily','hourly','reps','branches'])
+      for(const key in c[b])dates.add(c[b][key].d);
+    const ds=[...dates].filter(Boolean).sort();
+    v.hasCoverage=ds.length>0;
+    v.cacheRange=ds.length?(this.fmtDate(ds[0])+' → '+this.fmtDate(ds[ds.length-1])+' · '+ds.length+' dates'):'Empty — nothing ingested yet';
+    const CL=['OHS','SE','A1G','AGN'];
+    const pres=(bucket,d,cl)=>{
+      for(const key in c[bucket]){const o=c[bucket][key];if(o.d===d&&o.client===cl)return true;}
+      return false;
+    };
+    v.coverage=ds.slice(-31).reverse().map(d=>({label:this.fmtDate(d),
+      cells:CL.map(cl=>({marks:[['D','daily'],['R','reps'],['B','branches'],['H','hourly']].map(([k,b])=>{
+        const on=pres(b,d,cl);
+        return {k,bg:on?'rgba(42,92,230,.16)':'rgba(15,25,60,.05)',ink:on?'#2A47B8':'#B4BAC6'};
+      })}))}));
+    return v;
+  }
+}
+</script>
+</body>
+</html>
