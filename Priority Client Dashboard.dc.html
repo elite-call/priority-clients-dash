@@ -40,10 +40,10 @@ select{font-family:'Barlow',sans-serif}
   </div>
 
   <sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}">
-  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(348px,1fr));gap:13px;padding:13px;min-height:0;overflow-y:auto">
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(min-content,1fr));gap:13px;padding:13px;min-height:0;overflow-y:auto">
 
-    <div data-screen-label="OHS panel" ref="{{ ohsPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
-      <div style="height:5px;flex:none;background:linear-gradient(90deg,#3D5EE0 0 72%,#FFD437 72% 100%)"></div>
+    <div data-screen-label="OHS panel" ref="{{ ohsPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column">
+      <div style="height:5px;flex:none;border-radius:14px 14px 0 0;background:linear-gradient(90deg,#3D5EE0 0 72%,#FFD437 72% 100%)"></div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
         <div style="display:flex;align-items:center;gap:10px;min-width:0;min-height:58px">
           <svg width="30" height="16" viewBox="0 0 30 16" style="overflow:visible;flex:none"><path d="M2 14 L15 3 L28 14" style="fill:none;stroke:#3D5EE0;stroke-width:5;stroke-linecap:round;stroke-linejoin:round"></path></svg>
@@ -58,18 +58,19 @@ select{font-family:'Barlow',sans-serif}
         </select>
         <button onClick="{{ ohs.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#3D5EE0;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
       </div>
-      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
         <div style="display:flex;gap:40px;align-items:flex-end">
           <div>
-            <sc-if value="{{ ohs.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#3D5EE0">{{ ohs.convTotals }}</div></sc-if><sc-if value="{{ ohs.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B93A6;max-width:12ch;padding:6px 0 4px">{{ ohs.convMissing }}</div></sc-if>
+            <sc-if value="{{ ohs.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#3D5EE0">{{ ohs.marqueeVal }}</div></sc-if><sc-if value="{{ ohs.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B93A6;max-width:12ch;padding:6px 0 4px">{{ ohs.convMissing }}</div></sc-if>
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#3D5EE0">{{ ohs.convLabel }}</div>
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B93A6">{{ ohs.segNote }}</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">NET CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.records }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">RECORD LIST</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#B4BAC6">{{ ohs.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">PAYROLL HRS</div></div>
         </div>
       </div>
@@ -79,7 +80,7 @@ select{font-family:'Barlow',sans-serif}
       <div style="flex:none;padding:0 18px 12px">
         <div style="background:rgba(61,94,224,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
           <div style="flex:none">
-            <div style="font:800 20px/1 Barlow,sans-serif;color:#2A47B8">{{ ohs.convContacts }}</div>
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#2A47B8">{{ ohs.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6B7590;white-space:nowrap">{{ ohs.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
@@ -95,8 +96,8 @@ select{font-family:'Barlow',sans-serif}
       </div>
     </div>
 
-    <div data-screen-label="SE panel" ref="{{ sePanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
-      <div style="height:5px;flex:none;background:linear-gradient(90deg,#C8102E 0 50%,#1F7BC0 50% 100%)"></div>
+    <div data-screen-label="SE panel" ref="{{ sePanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column">
+      <div style="height:5px;flex:none;border-radius:14px 14px 0 0;background:linear-gradient(90deg,#C8102E 0 50%,#1F7BC0 50% 100%)"></div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
         <div style="min-height:58px;display:flex;align-items:center;flex:none"><img src="uploads/pasted-1786477833642-0.png" alt="Service Experts" style="height:58px;mix-blend-mode:multiply;display:block;margin:-6px 0"></div>
         <div style="flex:1"></div>
@@ -113,18 +114,19 @@ select{font-family:'Barlow',sans-serif}
         <button onClick="{{ se.goBranches }}" style="font:600 12px Barlow,sans-serif;color:#155E93;background:rgba(31,123,192,.09);border:1px solid rgba(31,123,192,.25);border-radius:999px;padding:5px 12px;white-space:nowrap">{{ se.branchLabel }} · VIEW BY BRANCH</button>
       </div>
       </sc-if>
-      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
         <div style="display:flex;gap:40px;align-items:flex-end">
           <div>
-            <sc-if value="{{ se.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#C8102E">{{ se.convTotals }}</div></sc-if><sc-if value="{{ se.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B8F98;max-width:12ch;padding:6px 0 4px">{{ se.convMissing }}</div></sc-if>
+            <sc-if value="{{ se.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#C8102E">{{ se.marqueeVal }}</div></sc-if><sc-if value="{{ se.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8B8F98;max-width:12ch;padding:6px 0 4px">{{ se.convMissing }}</div></sc-if>
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#C8102E">{{ se.convLabel }}</div>
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B8F98">{{ se.segNote }}</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.records }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">RECORD LIST</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#B7BBC2">{{ se.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">PAYROLL HRS</div></div>
         </div>
       </div>
@@ -134,7 +136,7 @@ select{font-family:'Barlow',sans-serif}
       <div style="flex:none;padding:0 18px 12px">
         <div style="background:rgba(200,16,46,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
           <div style="flex:none">
-            <div style="font:800 20px/1 Barlow,sans-serif;color:#9E0D24">{{ se.convContacts }}</div>
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#9E0D24">{{ se.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6E747E;white-space:nowrap">{{ se.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
@@ -150,8 +152,8 @@ select{font-family:'Barlow',sans-serif}
       </div>
     </div>
 
-    <div data-screen-label="AGN panel" ref="{{ agnPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
-      <div style="height:5px;flex:none;background:linear-gradient(90deg,#2E7CC0 0 72%,#7CB9EA 72% 100%)"></div>
+    <div data-screen-label="AGN panel" ref="{{ agnPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column">
+      <div style="height:5px;flex:none;border-radius:14px 14px 0 0;background:linear-gradient(90deg,#2E7CC0 0 72%,#7CB9EA 72% 100%)"></div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
         <div style="min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center">
           <img src="assets/agn-logo-blue.png" alt="Auto Glass Now" style="height:29px;display:block">
@@ -163,7 +165,7 @@ select{font-family:'Barlow',sans-serif}
         </select>
         <button onClick="{{ agn.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2E7CC0;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
       </div>
-      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
         <div style="display:flex;gap:40px;align-items:flex-end">
           <div>
             <sc-if value="{{ agn.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#2E7CC0">{{ agn.convTotals }}</div></sc-if><sc-if value="{{ agn.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8AA0B4;max-width:12ch;padding:6px 0 4px">{{ agn.convMissing }}</div></sc-if>
@@ -171,7 +173,7 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8AA0B4">{{ agn.segNote }}</div>
           </div>
           <div>
-            <div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ agn.stlColor }}">{{ agn.stl }}</div>
+            <sc-if value="{{ agn.hasStl }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ agn.stlColor }}">{{ agn.stl }}</div></sc-if><sc-if value="{{ agn.noStl }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#8AA0B4;max-width:12ch;padding:6px 0 4px">{{ agn.stlMissing }}</div></sc-if>
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">AVG SPEED-TO-LEAD</div>
           </div>
         </div>
@@ -204,8 +206,8 @@ select{font-family:'Barlow',sans-serif}
       </div>
     </div>
 
-    <div data-screen-label="A1G panel" ref="{{ a1gPanelRef }}" style="background:#FDF9F0;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column;overflow:hidden;min-height:0">
-      <div style="height:5px;flex:none;background:linear-gradient(90deg,#B92B27 0 72%,#8A6B4F 72% 100%)"></div>
+    <div data-screen-label="A1G panel" ref="{{ a1gPanelRef }}" style="background:#FDF9F0;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column">
+      <div style="height:5px;flex:none;border-radius:14px 14px 0 0;background:linear-gradient(90deg,#B92B27 0 72%,#8A6B4F 72% 100%)"></div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 18px 6px">
         <div style="min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center">
           <div style="font:700 24px/1 'Barlow Condensed',sans-serif;letter-spacing:.01em"><span style="color:#B92B27">A1</span> <span style="color:#33231A">GARAGE</span></div>
@@ -220,23 +222,24 @@ select{font-family:'Barlow',sans-serif}
         </select>
         <button onClick="{{ a1g.expand }}" style="flex:none;font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#B92B27;border:none;border-radius:999px;padding:7px 15px">EXPLORE</button>
       </div>
-      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:clamp(6px,2.2vh,22px);padding:6px 18px 4px">
         <div style="display:flex;gap:40px;align-items:flex-end">
           <div>
-            <sc-if value="{{ a1g.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#B92B27">{{ a1g.convTotals }}</div></sc-if><sc-if value="{{ a1g.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#9C8C7C;max-width:12ch;padding:6px 0 4px">{{ a1g.convMissing }}</div></sc-if>
+            <sc-if value="{{ a1g.hasConv }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:#B92B27">{{ a1g.marqueeVal }}</div></sc-if><sc-if value="{{ a1g.noConv }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#9C8C7C;max-width:12ch;padding:6px 0 4px">{{ a1g.convMissing }}</div></sc-if>
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">{{ a1g.convLabel }}</div>
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">{{ a1g.segNote }}</div>
           </div>
           <div>
-            <div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ a1g.stlColor }}">{{ a1g.stl }}</div>
+            <sc-if value="{{ a1g.hasStl }}"><div style="font:800 clamp(26px,4.5vw,96px)/1 Barlow,sans-serif;color:{{ a1g.stlColor }}">{{ a1g.stl }}</div></sc-if><sc-if value="{{ a1g.noStl }}"><div style="font:700 clamp(15px,1.35vw,24px)/1.2 Barlow,sans-serif;color:#9C8C7C;max-width:12ch;padding:6px 0 4px">{{ a1g.stlMissing }}</div></sc-if>
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">AVG SPEED-TO-LEAD</div>
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">Company-wide average</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.records }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">RECORD LIST</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#C3B6A6">{{ a1g.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">PAYROLL HRS</div></div>
         </div>
       </div>
@@ -246,7 +249,7 @@ select{font-family:'Barlow',sans-serif}
       <div style="flex:none;padding:0 18px 12px">
         <div style="background:rgba(185,43,39,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
           <div style="flex:none">
-            <div style="font:800 20px/1 Barlow,sans-serif;color:#93221F">{{ a1g.convContacts }}</div>
+            <div style="font:800 20px/1 Barlow,sans-serif;color:#93221F">{{ a1g.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A7A6A;white-space:nowrap">{{ a1g.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(51,35,26,.14);flex:none"></div>
@@ -817,12 +820,22 @@ class Component extends DCLogic {
     return out;
   }
   // ConversionTotals: leads / latest list size per segment (never summed across dates).
-  convTotals(f,a){
+  // Only segments that contribute a list size contribute leads, so numerator and denominator
+  // always describe the same records — pre-split rows carry no ListSize and are left out of both.
+  convTotalsParts(f,a){
     if(a.repFilter)return null;
-    let den=0;
-    if(f.convTotalsDenom==='denom')den=a.denom;
-    else for(const x of a.listBySeg.values())den+=x.v;
-    return den?a.leads/den*100:null;
+    if(f.convTotalsDenom==='denom')return a.denom?{num:a.leads,den:a.denom,excluded:0}:null;
+    let den=0,num=0;
+    for(const [seg,x] of a.listBySeg){
+      den+=x.v;
+      const sg=a.segs.get(seg);
+      if(sg)num+=sg.leads;
+    }
+    return den?{num,den,excluded:a.leads-num}:null;
+  }
+  convTotals(f,a){
+    const p=this.convTotalsParts(f,a);
+    return p?p.num/p.den*100:null;
   }
   // ConversionContacts: leads / campaign-level contacts reached (AGN: calls).
   convContacts(f,a){
@@ -875,10 +888,12 @@ class Component extends DCLogic {
       setSeg:e=>this.setState({segs:{...st.segs,[cid]:e.target.value}}),
       expand:()=>this.expandTo(cid,{}),
       calls:'—',contacts:'—',quotes:'—',leads:'—',convTotals:'—',convContacts:'—',hours:'—',
-      stl:'—',stlColor:cfg.ink,segNote:'',convLabel:'CONVERSION',statLabel:'INTERNAL',branchLabel:'',hasBranches:false,goBranches:()=>{},
+      stl:'—',stlColor:cfg.ink,hasStl:false,noStl:true,stlMissing:'AWAITING LEAD TRACKER',
+      segNote:'',convLabel:'CONVERSION',statLabel:'INTERNAL',branchLabel:'',hasBranches:false,goBranches:()=>{},
       targetActual:'—',targetNote:'',targetBarW:'0%',
       hasTop:false,topName:'',topLeads:'',
-      hasConv:false,noConv:true,convMissing:'LOADING'};
+      hasConv:false,noConv:true,convMissing:'LOADING',
+      marqueeVal:'—',secondVal:'—',records:'—'};
     const f=st.data&&st.data[cid];if(!f)return base;
     base.convLabel=f.convLabel||'CONVERSION';base.statLabel=f.statLabel||'INTERNAL';base.segNote=f.note||'';
     const tv=this.targetVals(f);
@@ -887,16 +902,35 @@ class Component extends DCLogic {
     if(a.rows){base.calls=this.fmt(a.calls);base.leads=this.fmt(a.leads);
       base.contacts=f.convContactsDenom==='calls'?'—':this.fmt(a.contacts);}
     base.quotes=a.denom?this.fmt(a.denom):'—';
-    const ct=this.convTotals(f,a);
-    base.convTotals=this.pct(ct);base.hasConv=ct!=null;base.noConv=ct==null;
+    const ct=this.convTotals(f,a),cc=this.convContacts(f,a);
+    base.convTotals=this.pct(ct);base.convContacts=this.pct(cc);
+    // Which rate is the marquee is per client: OHS reports leads/net contacts, the rest list conversion.
+    const bigIsContacts=f.marquee==='contacts';
+    const big=bigIsContacts?cc:ct;
+    base.marqueeVal=this.pct(big);base.secondVal=this.pct(bigIsContacts?ct:cc);
+    base.hasConv=big!=null;base.noConv=big==null;
     base.convMissing=!a.rows?'NO DATA IN THIS RANGE'
-      :(f.convTotalsDenom==='denom'?'AWAITING QUOTES TOUCHED':'AWAITING LIST SIZE');
-    base.convContacts=this.pct(this.convContacts(f,a));
+      :(bigIsContacts?'AWAITING CONTACTS'
+        :(f.convTotalsDenom==='denom'?'AWAITING QUOTES TOUCHED':'AWAITING LIST SIZE'));
+    // Total record count behind the list rate: latest list size per segment, summed across segments.
+    let recs=null;
+    if(f.convTotalsDenom==='denom')recs=a.denom||null;
+    else for(const x of a.listBySeg.values())recs=(recs||0)+x.v;
+    base.records=recs==null?'—':this.fmt(recs);
     const top=[...a.reps.values()].sort((x,y)=>y.leads-x.leads)[0];
     if(top&&top.leads>0){base.hasTop=true;base.topName=top.name;base.topLeads=this.fmt(top.leads)+' leads';}
     if(a.hoursSum!=null)base.hours=this.fmt(Math.round(a.hoursSum));
-    if(a.stlC){const s=Math.round(a.stlW/a.stlC);base.stl=this.fmtStl(s);base.stlColor=this.stlColor(s,cfg);}
+    if(a.stlC){const s=Math.round(a.stlW/a.stlC);base.stl=this.fmtStl(s);base.stlColor=this.stlColor(s,cfg);
+      base.hasStl=true;base.noStl=false;}
+    else base.stlMissing=a.rows?'AWAITING LEAD TRACKER':'NO DATA IN THIS RANGE';
     if(seg&&a.skippedDays.size)base.segNote=a.skippedDays.size+' pre-split day'+(a.skippedDays.size===1?'':'s')+' excluded (no segment before Aug 18)';
+    else{
+      const tp=this.convTotalsParts(f,a);
+      if(tp&&tp.excluded>0){
+        const n=this.fmt(tp.excluded)+' pre-split lead'+(tp.excluded===1?'':'s')+' outside the record list, excluded from list conversion';
+        base.segNote=base.segNote?(base.segNote+' · '+n):n;
+      }
+    }
     if(cid==='se'&&(f.branches||[]).length){base.hasBranches=true;base.branchLabel=f.branches.length+' BRANCHES';base.goBranches=()=>this.expandTo('se',{tab:'camps'});}
     return base;
   }

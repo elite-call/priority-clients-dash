@@ -21,10 +21,11 @@
         "pct": 14,
         "actualPct": null
       },
-      "convLabel": "CONVERSION · LEADS/LIST",
+      "convLabel": "CONVERSION · LEADS/NET CONTACTS",
       "contactsLabel": "NET CONTACTS",
       "note": "Net contacts = contacts less Already Completed, per the AM sheet",
-      "statLabel": "INTERNAL · LEADS/NET CONTACTS"
+      "statLabel": "LIST · LEADS/RECORDS",
+      "marquee": "contacts"
     },
     "se": {
       "name": "Service Experts",
@@ -49,7 +50,8 @@
       "convLabel": "CONVERSION · LEADS/LIST",
       "contactsLabel": "CONTACTS",
       "note": "",
-      "statLabel": "INTERNAL · LEADS/CONTACTS"
+      "statLabel": "INTERNAL · LEADS/CONTACTS",
+      "marquee": "totals"
     },
     "agn": {
       "name": "Auto Glass Now",
@@ -70,7 +72,8 @@
       "convLabel": "CONVERSION · LEADS/QUOTES",
       "contactsLabel": "CONTACTS (NOT TRACKED)",
       "note": "Team total · no campaign split at source",
-      "statLabel": "INTERNAL · LEADS/CALLS"
+      "statLabel": "INTERNAL · LEADS/CALLS",
+      "marquee": "totals"
     },
     "a1g": {
       "name": "A1 Garage Door Service",
@@ -95,7 +98,8 @@
       "convLabel": "CONVERSION · LEADS/LIST",
       "contactsLabel": "CONTACTS",
       "note": "",
-      "statLabel": "INTERNAL · LEADS/CONTACTS"
+      "statLabel": "INTERNAL · LEADS/CONTACTS",
+      "marquee": "totals"
     }
   }
 }
