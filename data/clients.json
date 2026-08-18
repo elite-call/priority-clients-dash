@@ -95,11 +95,11 @@
         "pct": 9,
         "actualPct": null
       },
-      "convLabel": "CONVERSION · LEADS/LIST",
+      "convLabel": "REPLACEMENT OPPS · SALES OPP/LEADS",
       "contactsLabel": "CONTACTS",
       "note": "",
-      "statLabel": "INTERNAL · LEADS/CONTACTS",
-      "marquee": "totals"
+      "statLabel": "LIST · LEADS/RECORDS",
+      "marquee": "opps"
     }
   }
 }
