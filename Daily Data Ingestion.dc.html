@@ -110,8 +110,9 @@ select,input{font-family:'Barlow',sans-serif}
         <div style="font:800 17px Barlow,sans-serif;color:#17233F">Cache</div>
         <div style="font:600 13px Barlow,sans-serif;color:#7A8394">{{ cacheRange }}</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:14px">
         <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cDaily }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">DAILY ROWS</div></div>
+        <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cLists }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">CAMPAIGN LISTS</div></div>
         <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cHourly }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">HOURLY ROWS</div></div>
         <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cReps }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">REP ROWS</div></div>
         <div><div style="font:800 24px/1 Barlow,sans-serif;color:#17233F">{{ cBranch }}</div><div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394;margin-top:5px">BRANCH ROWS</div></div>
@@ -372,7 +373,31 @@ class Component extends DCLogic {
     window.removeEventListener('dragover',this._noop);window.removeEventListener('drop',this._noop);
   }
 
-  blank(){return {v:1,daily:{},hourly:{},reps:{},branches:{}}}
+  blank(){return {v:1,daily:{},hourly:{},reps:{},branches:{},lists:{}}}
+  // A record list is not summed across dates — the same campaign's records recur every day it runs.
+  // Keep each campaign's most recent size, then add the unique campaigns up per segment.
+  recalcLists(cache){
+    const bySeg={};
+    for(const k in cache.lists||{}){
+      const e=cache.lists[k];
+      if(!e.obs&&e.d)e.obs={[e.d]:e.size||0};        // entries written before per-date sizes
+      const key=e.client+'|'+e.seg;
+      (bySeg[key]=bySeg[key]||[]).push(e);
+    }
+    for(const k in cache.daily){
+      const o=cache.daily[k];
+      const list=bySeg[o.client+'|'+o.seg];
+      if(!list)continue;
+      let sum=0,seen=0;
+      for(const e of list){
+        // the campaign's most recent size AT OR BEFORE this row's date; absent = not yet running
+        let best=null;
+        for(const d in e.obs)if(d<=o.d&&(best===null||d>best))best=d;
+        if(best!==null){sum+=e.obs[best]||0;seen++;}
+      }
+      if(seen)o.listSize=sum;
+    }
+  }
   load(){
     try{const raw=localStorage.getItem(Component.KEY);
       return raw?Object.assign(this.blank(),JSON.parse(raw)):this.blank();
@@ -490,20 +515,29 @@ class Component extends DCLogic {
       const {client,segment}=R.parse(camp);
       if(!client||!segment){skipped++;continue;}
       const o=this.bump(cache,date,client,segment),key=this.k(date,client,segment);
-      if(!fresh.has(key)){fresh.add(key);o.calls=0;o.contacts=0;o.leads=0;o.listSize=0;o.src='cs';}
+      if(!fresh.has(key)){fresh.add(key);o.calls=0;o.contacts=0;o.leads=0;o.src='cs';}
       o.calls+=this.num(r.Dialed)||0;
       o.contacts+=this.num(r.Contacts)||0;
       o.leads+=this.num(r['Sale/Lead/App'])||0;
-      o.listSize+=this.num(r['Total Leads'])||0;
+      const size=this.num(r['Total Leads']);
+      if(size!=null){
+        const lk=client+'|'+segment+'|'+camp.toUpperCase();
+        const e=cache.lists[lk]||(cache.lists[lk]={client,seg:segment,obs:{}});
+        if(!e.obs){e.obs=e.d?{[e.d]:e.size||0}:{};}
+        e.obs[date]=size;
+      }
       used++;
     }
+    this.recalcLists(cache);
     // A blank-segment aggregate row for the same day would double-count under "Both campaigns".
     let dropped=0;
     for(const key of [...fresh]){
       const cl=key.split('|')[1],agg=this.k(date,cl,'');
       if(cache.daily[agg]){delete cache.daily[agg];dropped++;}
     }
+    const uniq=Object.keys(cache.lists).length;
     return used+' campaigns → '+fresh.size+' segment rows on '+date+
+      ', record lists from '+uniq+' unique campaigns'+
       (dropped?', replaced '+dropped+' aggregate row'+(dropped===1?'':'s'):'')+
       (skipped?', '+skipped+' outside the four clients':'');
   }
@@ -634,8 +668,9 @@ class Component extends DCLogic {
     const c=JSON.parse(txt);
     if(!c||typeof c!=='object')throw new Error('not a cache file');
     const merged=Object.assign(this.blank(),c);
-    for(const bucket of ['daily','hourly','reps','branches'])
+    for(const bucket of ['daily','hourly','reps','branches','lists'])
       Object.assign(cache[bucket],merged[bucket]||{});
+    this.recalcLists(cache);
     return 'restored '+Object.keys(merged.daily||{}).length+' daily, '+
       Object.keys(merged.reps||{}).length+' rep, '+Object.keys(merged.hourly||{}).length+' hourly rows';
   }
@@ -817,6 +852,7 @@ class Component extends DCLogic {
     v.cHourly=this.fmt(Object.keys(c.hourly).length);
     v.cReps=this.fmt(Object.keys(c.reps).length);
     v.cBranch=this.fmt(Object.keys(c.branches).length);
+    v.cLists=this.fmt(Object.keys(c.lists||{}).length);
     let bytes=0;try{bytes=(localStorage.getItem(Component.KEY)||'').length;}catch(e){bytes=0;}
     v.cSize=bytes>999999?((bytes/1048576).toFixed(1)+' MB'):(Math.round(bytes/1024)+' KB');
 
