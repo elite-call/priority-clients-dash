@@ -365,7 +365,7 @@ class Component extends DCLogic {
     el.addEventListener('dragover',e=>{e.preventDefault();if(!this.state.dragOver)this.setState({dragOver:true});});
     el.addEventListener('dragleave',e=>{e.preventDefault();if(this.state.dragOver)this.setState({dragOver:false});});
     el.addEventListener('drop',e=>{e.preventDefault();this.setState({dragOver:false});
-      const fs=e.dataTransfer&&e.dataTransfer.files;if(fs&&fs.length)this.accept([...fs]);});
+      const fs=e.dataTransfer&&e.dataTransfer.files;if(fs&&fs.length)this.accept([...fs],'drag and drop');});
     this._noop=e=>e.preventDefault();
     window.addEventListener('dragover',this._noop);window.addEventListener('drop',this._noop);
   }
@@ -481,7 +481,8 @@ class Component extends DCLogic {
     else if(has('Client')&&has('CampaignSegment'))type='dailytable';
     return {type};
   }
-  async accept(files){
+  async accept(files,source){
+    source=source||'drop';
     this.setState({busy:'Reading headers',progress:0,err:''});
     const add=[];
     for(const f of files){
@@ -494,12 +495,17 @@ class Component extends DCLogic {
         needsDate:s.type==='agentsummary'||(s.type==='campaignsummary'&&!single),
         needsClient:s.type==='agentsummary'});
     }
-    this.setState({pending:[...this.state.pending,...add],busy:''});
+    // Receipt of exactly what this drop handed over, so a stray file can be traced to its batch.
+    const stamp=new Date().toLocaleTimeString();
+    const receipt=[{text:stamp+' · this drop delivered '+files.length+' file'+(files.length===1?'':'s')+
+      ' via '+source+': '+[...files].map(f=>f.name).join(', '),color:'#5A6472'}];
+    this.setState({pending:[...this.state.pending,...add],busy:'',
+      log:[...receipt,...this.state.log].slice(0,6)});
   }
 
   bump(cache,d,client,seg){
     const key=this.k(d,client,seg);
-    if(!cache.daily[key])cache.daily[key]={d,client,seg,calls:null,contacts:null,leads:null,denom:null,listSize:null,stlSec:null,src:''};
+    if(!cache.daily[key])cache.daily[key]={d,client,seg,calls:null,contacts:null,leads:null,denom:null,listSize:null,stlSec:null,opps:null,src:''};
     return cache.daily[key];
   }
 
@@ -544,8 +550,8 @@ class Component extends DCLogic {
   async doAppointments(cache,p){
     const R=this.rules();if(!R)throw new Error('campaign-rules.js did not load');
     const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
-    const dates=new Set(),freshR=new Set(),freshB=new Set();
-    let leads=0,skipped=0,withBranch=0;
+    const dates=new Set(),freshR=new Set(),freshB=new Set(),freshO=new Set();
+    let leads=0,skipped=0,withBranch=0,opps=0;
     for(const r of rows){
       const d=this.iso(r.Date);if(!d)continue;
       const {client,segment}=R.parse(r.Campaign||'');
@@ -556,6 +562,12 @@ class Component extends DCLogic {
       if(!cache.reps[rk])cache.reps[rk]={d,client,seg:segment,rep,calls:null,contacts:null,leads:0};
       if(!freshR.has(rk)){freshR.add(rk);cache.reps[rk].leads=0;}
       cache.reps[rk].leads++;
+      // Replacement opportunities: counted from the appointment disposition, kept beside the
+      // counted leads so the ratio never mixes a counted numerator with an inferred one.
+      const ok=this.k(d,client,segment);
+      const o=this.bump(cache,d,client,segment);
+      if(!freshO.has(ok)){freshO.add(ok);o.opps=0;}
+      if(/^HS - SALES OPP$/i.test((r['Call Status']||'').trim())){o.opps++;opps++;}
       const br=(r.BranchName||'').trim();
       if(br){
         const bk=this.k(d,client,segment,br);
@@ -565,7 +577,7 @@ class Component extends DCLogic {
       }
     }
     const ds=[...dates].sort();
-    return leads+' leads over '+ds.length+' date'+(ds.length===1?'':'s')+
+    return leads+' appointments ('+opps+' sales opps) over '+ds.length+' date'+(ds.length===1?'':'s')+
       (ds.length?' ('+ds[0]+(ds.length>1?' → '+ds[ds.length-1]:'')+')':'')+
       ', '+withBranch+' with a branch'+(skipped?', '+skipped+' outside the four clients':'');
   }
@@ -714,8 +726,8 @@ class Component extends DCLogic {
     const rows=Object.values(c.daily).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.client<b.client?-1:a.client>b.client?1:(a.seg<b.seg?-1:1)))
       .map(o=>[o.d,o.client,o.seg,o.calls==null?'':o.calls,o.contacts==null?'':o.contacts,
         o.leads==null?'':o.leads,o.denom==null?'':o.denom,o.listSize==null?'':o.listSize,
-        o.stlSec==null?'':o.stlSec,''].join(','));
-    return this.csv('Date,Client,CampaignSegment,Calls,Contacts,Leads,Denom,ListSize,AvgSTLsec,PayrollHours',rows);
+        o.stlSec==null?'':o.stlSec,'',o.opps==null?'':o.opps].join(','));
+    return this.csv('Date,Client,CampaignSegment,Calls,Contacts,Leads,Denom,ListSize,AvgSTLsec,PayrollHours,SalesOpp',rows);
   }
   hourlyCsv(){
     const c=this.state.cache||this.blank();
@@ -758,7 +770,7 @@ class Component extends DCLogic {
     const segsFor=cl=>(R&&R.SEGMENTS[cl])||[];
     const v={
       dropRef:el=>{this._drop=el;},
-      onPick:e=>{const fs=e.target.files;if(fs&&fs.length)this.accept([...fs]);e.target.value='';},
+      onPick:e=>{const fs=e.target.files;if(fs&&fs.length)this.accept([...fs],'the file picker');e.target.value='';},
       dropBorder:st.dragOver?'#2A5CE6':'rgba(15,25,60,.2)',
       busy:st.busy,progressPct:st.progress+'%',
       failed:!!st.err,err:st.err,

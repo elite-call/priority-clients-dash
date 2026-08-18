@@ -235,10 +235,11 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">Company-wide average</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:9px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CONTACTS</div></div>
+          <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#B92B27">{{ a1g.opps }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">SALES OPPS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.records }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">RECORD LIST</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#C3B6A6">{{ a1g.hours }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">PAYROLL HRS</div></div>
         </div>
@@ -316,6 +317,10 @@ select{font-family:'Barlow',sans-serif}
         <sc-if value="{{ ex.tabOverview }}">
         <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-height:0;animation:ecFade .25s ease">
           <div style="display:flex;gap:26px;flex-wrap:wrap">
+            <sc-if value="{{ ex.hasOpps }}">
+              <div><div style="font:800 44px/1 Barlow,sans-serif;color:{{ ex.accent }}">{{ ex.oppRate }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">{{ ex.oppLabel }}</div></div>
+              <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.oppsCount }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">SALES OPPS</div></div>
+            </sc-if>
             <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.calls }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">CALLS PLACED</div></div>
             <div><div style="font:800 44px/1 Barlow,sans-serif">{{ ex.contacts }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">{{ ex.contactsLabel }}</div></div>
             <div><div style="font:800 44px/1 Barlow,sans-serif;color:{{ ex.accent }}">{{ ex.leads }}</div><div style="margin-top:4px;font:700 10.5px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">LEADS</div></div>
@@ -574,7 +579,7 @@ class Component extends DCLogic {
       const keepDenom=f.convTotalsDenom==='denom';
       f.daily.push({d,seg,calls:calls||0,contacts:contacts||0,leads:leads||0,
         denom:keepDenom?num(r.Denom):null,listSize:num(r.ListSize),contactsCampaign:null,
-        stlSec:num(r.AvgSTLsec),hours:num(r.PayrollHours)});
+        stlSec:num(r.AvgSTLsec),hours:num(r.PayrollHours),opps:num(r.SalesOpp)});
     }
     for(const k in out)out[k].daily.sort((a,b)=>a.d<b.d?-1:1);
     return out;
@@ -643,7 +648,8 @@ class Component extends DCLogic {
         calls:r.calls||0,contacts:r.contacts||0,leads:r.leads||0,
         denom:(f.convTotalsDenom==='denom'&&r.denom!=null)?r.denom:null,
         listSize:r.listSize==null?null:r.listSize,
-        contactsCampaign:null,stlSec:r.stlSec==null?null:r.stlSec,hours:r.hours==null?null:r.hours});
+        contactsCampaign:null,stlSec:r.stlSec==null?null:r.stlSec,hours:r.hours==null?null:r.hours,
+        opps:r.opps==null?null:r.opps});
     }
     for(const r of Object.values(c.hourly||{})){
       const f=all[(r.client||'').toLowerCase()];if(!f||!r.d)continue;
@@ -750,7 +756,7 @@ class Component extends DCLogic {
   agg(cid,rangeKey,seg,branch,rep){
     const f=this.state.data[cid];const [s,e]=this.bounds(rangeKey);
     const out={calls:0,contacts:0,leads:0,denom:0,contactsCamp:0,listBySeg:new Map(),
-      stlW:0,stlC:0,hoursSum:null,daily:new Map(),segs:new Map(),reps:new Map(),branches:new Map(),
+      stlW:0,stlC:0,hoursSum:null,opps:null,daily:new Map(),segs:new Map(),reps:new Map(),branches:new Map(),
       heat:Array.from({length:7},()=>new Array(14).fill(0)),skippedDays:new Set(),repFilter:false,rows:0};
     for(const r of f.daily||[]){
       if(r.d<s||r.d>e)continue;
@@ -762,6 +768,7 @@ class Component extends DCLogic {
       if(r.listSize!=null){const cur=out.listBySeg.get(r.seg);if(!cur||r.d>cur.d)out.listBySeg.set(r.seg,{d:r.d,v:r.listSize});}
       if(r.stlSec!=null&&r.calls){out.stlW+=r.stlSec*r.calls;out.stlC+=r.calls;}
       if(r.hours!=null)out.hoursSum=(out.hoursSum||0)+r.hours;
+      if(r.opps!=null)out.opps=(out.opps||0)+r.opps;
       let dd=out.daily.get(r.d);if(!dd){dd={d:r.d,calls:0,contacts:0,leads:0};out.daily.set(r.d,dd);}
       dd.calls+=r.calls||0;dd.contacts+=r.contacts||0;dd.leads+=r.leads||0;
       let sg=out.segs.get(r.seg);
@@ -850,6 +857,8 @@ class Component extends DCLogic {
     if(f.convTotalsDenom==='denom'||a.repFilter)return null;
     return a.denom?a.leads/a.denom*100:null;
   }
+  // Replacement opportunities as a share of leads. Both sides are counted, never inferred.
+  oppRate(a){return (a.opps!=null&&a.leads)?a.opps/a.leads*100:null}
   pct(v,dp){return v==null?'—':v.toFixed(dp==null?1:dp)+'%'}
   dash(v){return v==null?'—':this.fmt(v)}
   fmtStl(s){return s<120?s+'s':Math.round(s/60)+'m'}
@@ -893,7 +902,7 @@ class Component extends DCLogic {
       targetActual:'—',targetNote:'',targetBarW:'0%',
       hasTop:false,topName:'',topLeads:'',
       hasConv:false,noConv:true,convMissing:'LOADING',
-      marqueeVal:'—',secondVal:'—',records:'—'};
+      marqueeVal:'—',secondVal:'—',records:'—',opps:'—'};
     const f=st.data&&st.data[cid];if(!f)return base;
     base.convLabel=f.convLabel||'CONVERSION';base.statLabel=f.statLabel||'INTERNAL';base.segNote=f.note||'';
     const tv=this.targetVals(f);
@@ -905,13 +914,18 @@ class Component extends DCLogic {
     const ct=this.convTotals(f,a),cc=this.convContacts(f,a);
     base.convTotals=this.pct(ct);base.convContacts=this.pct(cc);
     // Which rate is the marquee is per client: OHS reports leads/net contacts, the rest list conversion.
-    const bigIsContacts=f.marquee==='contacts';
-    const big=bigIsContacts?cc:ct;
-    base.marqueeVal=this.pct(big);base.secondVal=this.pct(bigIsContacts?ct:cc);
+    const orate=this.oppRate(a);
+    base.opps=this.dash(a.opps);
+    let big,second;
+    if(f.marquee==='opps'){big=orate;second=ct;}
+    else if(f.marquee==='contacts'){big=cc;second=ct;}
+    else {big=ct;second=cc;}
+    base.marqueeVal=this.pct(big);base.secondVal=this.pct(second);
     base.hasConv=big!=null;base.noConv=big==null;
     base.convMissing=!a.rows?'NO DATA IN THIS RANGE'
-      :(bigIsContacts?'AWAITING CONTACTS'
-        :(f.convTotalsDenom==='denom'?'AWAITING QUOTES TOUCHED':'AWAITING LIST SIZE'));
+      :(f.marquee==='opps'?'AWAITING APPOINTMENT REPORT'
+        :(f.marquee==='contacts'?'AWAITING CONTACTS'
+          :(f.convTotalsDenom==='denom'?'AWAITING QUOTES TOUCHED':'AWAITING LIST SIZE')));
     // Total record count behind the list rate: latest list size per segment, summed across segments.
     let recs=null;
     if(f.convTotalsDenom==='denom')recs=a.denom||null;
@@ -963,11 +977,15 @@ class Component extends DCLogic {
       setSeg:e=>this.setState({segs:{...st.segs,[cid]:e.target.value}}),
       contactsLabel:f.contactsLabel||'CONTACTS',
       totalsLabel:f.convTotalsDenom==='denom'?'LEADS/QUOTES':'LEADS/LIST',
-      statLabel:f.statLabel||'INTERNAL',
+      statLabel:f.convContactsDenom==='calls'?'CONV · LEADS/CALLS':'CONV · LEADS/CONTACTS',
       calls:a.rows?this.dash(a.calls):'—',leads:a.rows?this.dash(a.leads):'—',
       contacts:(f.convContactsDenom==='calls'||!a.rows)?'—':this.dash(a.contacts),
       convTotals:this.pct(this.convTotals(f,a)),convContacts:this.pct(this.convContacts(f,a)),
       rangeLabel:this.rangeLabel(range)};
+    const orate=this.oppRate(a);
+    ex.hasOpps=f.marquee==='opps';
+    ex.oppRate=this.pct(orate);ex.oppsCount=this.dash(a.opps);
+    ex.oppLabel=f.convLabel||'REPLACEMENT OPPS';
     const cd=this.convDialed(f,a);
     ex.hasDialed=cd!=null;ex.convDialed=this.pct(cd);
     ex.dialed=a.denom?this.fmt(a.denom):'—';

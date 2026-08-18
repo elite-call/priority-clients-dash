@@ -1,0 +1,50 @@
+WHERE THESE GO
+==============
+
+Unzip into your repo clone, keeping the folder structure. Everything here goes at the
+repo root except clients.json, which goes in data/.
+
+  Priority Client Dashboard.dc.html   ->  repo root
+  Daily Data Ingestion.dc.html        ->  repo root
+  Call Details Aggregator.dc.html     ->  repo root
+  August Best Days.dc.html            ->  repo root
+  campaign-rules.js                   ->  repo root
+  doc-page.js                         ->  repo root
+  index.html                          ->  repo root
+  data/clients.json                   ->  data/
+
+DO NOT copy anything else into data/. Your four data CSVs live there already and are
+the real data; nothing in this folder should replace them.
+
+
+WHAT CHANGED SINCE THE FIRST ZIP
+================================
+
+Dashboard
+  - Client-facing conversion (leads/list) is the marquee number; OHS shows leads/net
+    contacts instead, which is what that client reports on.
+  - The internal rate moved to the strip at the bottom and is labelled INTERNAL.
+  - RECORD LIST added as a stat, so the conversion denominator is visible.
+  - List conversion now excludes leads from rows that carry no record list, so the
+    percentage reconciles against the published count.
+  - Missing values say what they are waiting on instead of showing a large dash.
+  - Panel heights are driven by content, so nothing clips.
+  - UPDATE DATA button in the header, linking to the ingestion page.
+
+Ingestion
+  - PUBLISH TO THE REPO: commits the data files to GitHub directly. One-time setup is a
+    fine-grained token with Contents: read and write, scoped to this repository.
+  - Rep names are a three-way choice: do not publish, initials only, or full names.
+    Defaults to not publishing.
+  - Warns when a reps.csv carrying real names is already public, with a button to
+    delete it from the repo.
+  - A daily backfill table can no longer overwrite a day that Campaign Summary has
+    already counted.
+
+Aggregator
+  - Disposition rules are set per client, since the conventions differ.
+  - The daily export is now named daily-from-calls-ESTIMATED.csv, because its leads are
+    inferred from dispositions rather than counted.
+
+New page
+  - August Best Days.dc.html, built from the daily Campaign Summary exports.
