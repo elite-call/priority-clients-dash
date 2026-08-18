@@ -139,6 +139,56 @@ select,input{font-family:'Barlow',sans-serif}
       </sc-if>
     </div>
 
+    <div style="background:#0E9B57;color:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font:800 17px Barlow,sans-serif">Publish to the repo</div>
+        <div style="font:600 12.5px Barlow,sans-serif;color:rgba(255,255,255,.75)">{{ ghStatus }}</div>
+      </div>
+      <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:rgba(255,255,255,.8);margin-top:6px;max-width:670px">
+        Commits the data files straight to <b>{{ ghRepo }}</b>. The wall display picks them up on its next
+        reload — no downloading, no copying files.
+      </div>
+      <div style="background:rgba(0,0,0,.18);border-radius:10px;padding:11px 13px;margin-top:12px">
+        <div style="font:700 11px Barlow,sans-serif;letter-spacing:.06em;color:#FFFFFF">{{ ghVisibility }}</div>
+        <sc-if value="{{ ghRepsLive }}">
+          <div style="display:flex;gap:11px;align-items:center;flex-wrap:wrap;background:rgba(255,120,100,.22);border-radius:8px;padding:9px 11px;margin-top:10px">
+            <div style="flex:1;min-width:240px;font:600 12px/1.5 Barlow,sans-serif;color:#FFFFFF">{{ ghRepsLiveNote }}</div>
+            <button onClick="{{ deleteReps }}" style="font:700 10.5px Barlow,sans-serif;letter-spacing:.09em;color:#B3261E;background:#FFFFFF;border:none;border-radius:999px;padding:8px 14px;flex:none">DELETE IT FROM THE REPO</button>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:11px">
+          <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:rgba(255,255,255,.7)">REP NAMES</div>
+          <sc-for list="{{ repsModes }}" as="rm" hint-placeholder-count="3">
+            <button onClick="{{ rm.go }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.08em;padding:6px 13px;border-radius:999px;background:{{ rm.bg }};color:{{ rm.ink }};border:1.5px solid {{ rm.bd }}">{{ rm.label }}</button>
+          </sc-for>
+        </div>
+        <div style="font:600 12px/1.5 Barlow,sans-serif;color:rgba(255,255,255,.9);margin-top:9px">{{ ghRepsNote }}</div>
+      </div>
+      <sc-if value="{{ ghNeedsToken }}">
+        <div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap;align-items:center">
+          <input type="password" value="{{ ghToken }}" onChange="{{ setGhToken }}" placeholder="GitHub token (contents: write)" style="flex:1;min-width:260px;font:600 12.5px Barlow,sans-serif;color:#17233F;background:#FFFFFF;border:none;border-radius:9px;padding:10px 12px">
+          <button onClick="{{ saveGhToken }}" style="font:700 11.5px Barlow,sans-serif;letter-spacing:.1em;color:#0E9B57;background:#FFFFFF;border:none;border-radius:999px;padding:10px 18px">SAVE TOKEN</button>
+        </div>
+        <div style="font:600 11.5px/1.6 Barlow,sans-serif;color:rgba(255,255,255,.72);margin-top:9px;max-width:670px">
+          GitHub → Settings → Developer settings → Fine-grained tokens. Give it access to this one repository
+          and Contents: read and write. Stored in this browser only, never sent anywhere but GitHub.
+        </div>
+      </sc-if>
+      <sc-if value="{{ ghReady }}">
+        <div style="display:flex;gap:11px;margin-top:16px;flex-wrap:wrap;align-items:center">
+          <button onClick="{{ publish }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#0E9B57;background:#FFFFFF;border:none;border-radius:999px;padding:11px 22px">{{ publishLabel }}</button>
+          <button onClick="{{ forgetGhToken }}" style="font:700 11px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:transparent;border:1.5px solid rgba(255,255,255,.4);border-radius:999px;padding:9px 15px">FORGET TOKEN</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasGhLog }}">
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:14px;border-top:1px solid rgba(255,255,255,.2);padding-top:12px">
+          <sc-for list="{{ ghLog }}" as="g" hint-placeholder-count="2">
+            <div style="font:600 12.5px/1.45 Barlow,sans-serif;color:{{ g.color }}">{{ g.text }}</div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
     <div style="background:#17233F;color:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
       <div style="font:800 17px Barlow,sans-serif">Export for the dashboard</div>
       <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:6px;max-width:670px">
@@ -179,9 +229,136 @@ class Component extends DCLogic {
     dailytable:{label:'Daily table · backfill',tint:'#5A6472'},
     cachejson:{label:'Cache backup · replaces everything',tint:'#5A6472'}
   };
-  state={cache:null,pending:[],busy:'',progress:0,log:[],err:'',dragOver:false,armClear:false};
+  static TOKEN_KEY='ec_gh_token';
+  static REPO={owner:'elite-call',repo:'priority-clients-dash',branch:'main'};
+  state={cache:null,pending:[],busy:'',progress:0,log:[],err:'',dragOver:false,armClear:false,
+    ghToken:'',ghSaved:false,ghLog:[],ghBusy:false,ghPublic:null,repsMode:'off',ghRepsLive:null};
 
+  // Commits the exports to the repo so the wall display picks them up without any file shuffling.
+  b64(text){
+    const bytes=new TextEncoder().encode(text);
+    let s='';for(const b of bytes)s+=String.fromCharCode(b);
+    return btoa(s);
+  }
+  async putFile(path,text,token){
+    const R=Component.REPO;
+    const url='https://api.github.com/repos/'+R.owner+'/'+R.repo+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
+    const headers={Authorization:'Bearer '+token,Accept:'application/vnd.github+json'};
+    let sha=null;
+    const cur=await fetch(url+'?ref='+R.branch,{headers});
+    if(cur.ok)sha=(await cur.json()).sha;
+    else if(cur.status===401||cur.status===403)throw new Error('token rejected ('+cur.status+')');
+    else if(cur.status!==404)throw new Error('could not read current file ('+cur.status+')');
+    const body={message:'Data update '+new Date().toISOString().slice(0,10),
+      content:this.b64(text),branch:R.branch};
+    if(sha)body.sha=sha;
+    const put=await fetch(url,{method:'PUT',headers,body:JSON.stringify(body)});
+    if(!put.ok){
+      let why='';try{why=(await put.json()).message||'';}catch(e){}
+      throw new Error('commit failed ('+put.status+(why?': '+why:'')+')');
+    }
+    return sha?'updated':'created';
+  }
+  // Initials plus a stable per-name number, so leaderboards still rank without publishing who anyone is.
+  repsCsvAnon(){
+    const seen=new Map();
+    const label=name=>{
+      if(seen.has(name))return seen.get(name);
+      const parts=String(name).replace(/"/g,'').split(/[,\s]+/).filter(Boolean);
+      const ini=(parts[1]||parts[0]||'?')[0]+'.'+(parts[0]||'?')[0]+'.';
+      let tag=ini,n=2;
+      while([...seen.values()].indexOf(tag)>=0){tag=ini+' '+n;n++;}
+      seen.set(name,tag);return tag;
+    };
+    return this.repsCsv().split('\n').map((line,i)=>{
+      if(i===0||!line.trim())return line;
+      return line.replace(/"([^"]+)"/,(m,name)=>'"'+label(name)+'"');
+    }).join('\n');
+  }
+  // A guard that returns silently reads as "it worked" — say why nothing happened.
+  blocked(action){
+    if(this.state.ghBusy)return true;
+    if(!this.state.ghSaved||!this.state.ghToken){
+      this.setState({ghLog:[{text:'Save a GitHub token first — '+action+' needs contents: write.',color:'#FFD9D2'}]});
+      return true;
+    }
+    return false;
+  }
+  async deleteRepsFile(){
+    if(this.blocked('deleting'))return;
+    const token=this.state.ghToken;
+    this.setState({ghBusy:true,ghLog:[{text:'Deleting data/reps.csv…',color:'rgba(255,255,255,.8)'}]});
+    const R=Component.REPO;
+    const url='https://api.github.com/repos/'+R.owner+'/'+R.repo+'/contents/data%2Freps.csv';
+    const headers={Authorization:'Bearer '+token,Accept:'application/vnd.github+json'};
+    try{
+      const cur=await fetch(url+'?ref='+R.branch,{headers});
+      if(cur.status===404){
+        this.setState({ghRepsLive:false,ghBusy:false,
+          ghLog:[{text:'Nothing to delete — data/reps.csv is not in the repo.',color:'#FFFFFF'}]});
+        return;
+      }
+      if(!cur.ok)throw new Error('could not read the file ('+cur.status+')');
+      const sha=(await cur.json()).sha;
+      const del=await fetch(url,{method:'DELETE',headers,
+        body:JSON.stringify({message:'Remove rep names from the public repo',sha,branch:R.branch})});
+      if(!del.ok){
+        let why='';try{why=(await del.json()).message||'';}catch(e){}
+        throw new Error('delete failed ('+del.status+(why?': '+why:'')+')');
+      }
+      this.setState({ghRepsLive:false,ghBusy:false,ghLog:[
+        {text:'✓ data/reps.csv removed from the repo.',color:'#FFFFFF'},
+        {text:'Git keeps history, so the old file is still reachable in past commits. Rewriting history or making the repo private is the only way to remove it fully.',color:'rgba(255,255,255,.8)'}]});
+    }catch(e){
+      this.setState({ghBusy:false,ghLog:[{text:'✕ '+(e&&e.message?e.message:String(e)),color:'#FFD9D2'}]});
+    }
+  }
+  async publish(){
+    if(this.blocked('publishing'))return;
+    const token=this.state.ghToken;
+    this.setState({ghBusy:true,ghLog:[{text:'Publishing…',color:'rgba(255,255,255,.8)'}]});
+    const files=[['data/all_clients_daily.csv',this.dailyCsv()],
+      ['data/hourly.csv',this.hourlyCsv()],
+      ['data/branches.csv',this.branchesCsv()]];
+    const rm=this.state.repsMode;
+    if(rm==='full')files.splice(2,0,['data/reps.csv',this.repsCsv()]);
+    else if(rm==='anon')files.splice(2,0,['data/reps.csv',this.repsCsvAnon()]);
+    const out=[];
+    for(const [path,text] of files){
+      try{
+        const what=await this.putFile(path,text,token);
+        out.push({text:'✓ '+path+' '+what,color:'#FFFFFF'});
+      }catch(e){
+        out.push({text:'✕ '+path+' — '+(e&&e.message?e.message:String(e)),color:'#FFD9D2'});
+      }
+      this.setState({ghLog:out.slice()});
+    }
+    const ok=out.every(l=>l.text.indexOf('✓')===0);
+    out.push({text:ok?'Done. The wall display will show these on its next reload.'
+      :'Some files did not commit — fix the reason above and publish again.',
+      color:ok?'rgba(255,255,255,.8)':'#FFD9D2'});
+    this.setState({ghLog:out,ghBusy:false});
+  }
   componentDidMount(){
+    let tok='';
+    try{tok=localStorage.getItem(Component.TOKEN_KEY)||'';}catch(e){}
+    this.setState({ghToken:tok,ghSaved:!!tok});
+    // reps.csv carries employee names, so the destination's visibility has to be stated, not assumed.
+    const R=Component.REPO;
+    fetch('https://api.github.com/repos/'+R.owner+'/'+R.repo)
+      .then(r=>r.ok?r.json():null)
+      .then(j=>{if(j)this.setState({ghPublic:j.private===false});})
+      .catch(()=>{});
+    // Is a names-bearing reps.csv sitting in the repo right now, readable with no credentials?
+    fetch('https://raw.githubusercontent.com/'+R.owner+'/'+R.repo+'/'+R.branch+'/data/reps.csv',{cache:'no-store'})
+      .then(r=>r.ok?r.text():null)
+      .then(t=>{
+        if(t==null)return this.setState({ghRepsLive:false});
+        const lines=t.trim().split('\n').slice(1).filter(Boolean);
+        const names=new Set(lines.map(l=>(l.match(/"([^"]+)"/)||[])[1]).filter(Boolean));
+        this.setState({ghRepsLive:lines.length>0,ghRepsLiveCount:names.size,ghRepsLiveRows:lines.length});
+      })
+      .catch(()=>this.setState({ghRepsLive:false}));
     this.setState({cache:this.load()});
     const el=this._drop;if(!el)return;
     el.addEventListener('dragover',e=>{e.preventDefault();if(!this.state.dragOver)this.setState({dragOver:true});});
@@ -297,7 +474,7 @@ class Component extends DCLogic {
 
   bump(cache,d,client,seg){
     const key=this.k(d,client,seg);
-    if(!cache.daily[key])cache.daily[key]={d,client,seg,calls:null,contacts:null,leads:null,denom:null,listSize:null,stlSec:null};
+    if(!cache.daily[key])cache.daily[key]={d,client,seg,calls:null,contacts:null,leads:null,denom:null,listSize:null,stlSec:null,src:''};
     return cache.daily[key];
   }
 
@@ -313,7 +490,7 @@ class Component extends DCLogic {
       const {client,segment}=R.parse(camp);
       if(!client||!segment){skipped++;continue;}
       const o=this.bump(cache,date,client,segment),key=this.k(date,client,segment);
-      if(!fresh.has(key)){fresh.add(key);o.calls=0;o.contacts=0;o.leads=0;o.listSize=0;}
+      if(!fresh.has(key)){fresh.add(key);o.calls=0;o.contacts=0;o.leads=0;o.listSize=0;o.src='cs';}
       o.calls+=this.num(r.Dialed)||0;
       o.contacts+=this.num(r.Contacts)||0;
       o.leads+=this.num(r['Sale/Lead/App'])||0;
@@ -425,7 +602,7 @@ class Component extends DCLogic {
   }
   async doDailyTable(cache,p){
     const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
-    let n=0,skippedAgg=0;
+    let n=0,skippedAgg=0,held=0;
     for(const r of rows){
       const d=this.iso(r.Date),client=(r.Client||'').trim().toUpperCase();
       let seg=(r.CampaignSegment||'').trim().toUpperCase();
@@ -435,6 +612,8 @@ class Component extends DCLogic {
       // Skip an aggregate row when that day already has segment-split rows for the client.
       if(!seg&&Object.keys(cache.daily).some(key=>{const o2=cache.daily[key];return o2.d===d&&o2.client===client&&o2.seg;})){skippedAgg++;continue;}
       const o=this.bump(cache,d,client,seg);
+      // Campaign Summary counts leads; a daily table may carry estimates. Counted always wins.
+      if(o.src==='cs'){held++;continue;}
       if(calls!=null)o.calls=calls;
       if(contacts!=null)o.contacts=contacts;
       if(leads!=null)o.leads=leads;
@@ -446,7 +625,9 @@ class Component extends DCLogic {
       if(stl!=null)o.stlSec=stl;
       n++;
     }
-    return n+' daily rows merged'+(skippedAgg?', '+skippedAgg+' aggregate row'+(skippedAgg===1?'':'s')+' skipped (that day is already split by campaign)':'');
+    return n+' daily rows merged'+
+      (held?', '+held+' row'+(held===1?'':'s')+' left alone (Campaign Summary already counted those days)':'')+
+      (skippedAgg?', '+skippedAgg+' aggregate row'+(skippedAgg===1?'':'s')+' skipped (that day is already split by campaign)':'');
   }
   async doCacheJson(cache,p){
     const txt=await p.file.text();
@@ -584,7 +765,47 @@ class Component extends DCLogic {
       clearInk:st.armClear?'#17233F':'#FFB4A8',
       clearBg:st.armClear?'#FFB4A8':'transparent',
       clearBd:st.armClear?'#FFB4A8':'rgba(255,180,168,.45)',
-      clearNote:'Export first — this cannot be undone.'
+      clearNote:'Export first — this cannot be undone.',
+      ghRepo:Component.REPO.owner+'/'+Component.REPO.repo,
+      ghToken:st.ghToken,
+      ghNeedsToken:!st.ghSaved,ghReady:st.ghSaved,
+      ghIsPublic:st.ghPublic===true,
+      ghVisibility:st.ghPublic===true
+        ?'This repository is PUBLIC — anything published here is readable by anyone on the internet.'
+        :(st.ghPublic===false?'This repository is private.':'Checking repository visibility…'),
+      repsModes:[
+        {v:'off',label:'DO NOT PUBLISH'},
+        {v:'anon',label:'INITIALS ONLY'},
+        {v:'full',label:'FULL NAMES'}
+      ].map(m=>({label:m.label,go:()=>this.setState({repsMode:m.v}),
+        bg:st.repsMode===m.v?'#FFFFFF':'transparent',
+        ink:st.repsMode===m.v?'#0E9B57':'#FFFFFF',
+        bd:st.repsMode===m.v?'#FFFFFF':'rgba(255,255,255,.4)'})),
+      ghRepsNote:st.repsMode==='full'
+        ?'Agents will be published by name with their daily lead counts.'
+        :(st.repsMode==='anon'
+          ?'Agents publish as initials. Leaderboards and Top Producer keep updating on the wall display without naming anyone.'
+          :'Rep views keep working on this machine from the local cache, but the wall display will show whatever rep data is already in the repo, frozen.'),
+      ghRepsLive:st.ghRepsLive===true,
+      ghRepsLiveNote:st.ghRepsLive===true
+        ?('A reps.csv with '+(st.ghRepsLiveCount||0)+' named agents across '+(st.ghRepsLiveRows||0)+' rows is in the repo right now and readable by anyone. Not publishing does not remove it.')
+        :'',
+      deleteReps:()=>this.deleteRepsFile(),
+      ghStatus:st.ghSaved?('committing to '+Component.REPO.branch):'one-time setup',
+      publishLabel:st.ghBusy?'PUBLISHING…':'PUBLISH DATA FILES',
+      hasGhLog:st.ghLog.length>0,ghLog:st.ghLog,
+      setGhToken:e=>this.setState({ghToken:e.target.value}),
+      saveGhToken:()=>{
+        const t=(st.ghToken||'').trim();
+        if(!t)return;
+        try{localStorage.setItem(Component.TOKEN_KEY,t);}catch(e){}
+        this.setState({ghToken:t,ghSaved:true,ghLog:[]});
+      },
+      forgetGhToken:()=>{
+        try{localStorage.removeItem(Component.TOKEN_KEY);}catch(e){}
+        this.setState({ghToken:'',ghSaved:false,ghLog:[]});
+      },
+      publish:()=>this.publish()
     };
     const ready=st.pending.filter(p=>this.isReady(p)).length;
     const blocked=st.pending.length-ready;

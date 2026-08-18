@@ -146,18 +146,18 @@ select{font-family:'Barlow',sans-serif}
         </div>
         <div style="display:flex;gap:11px;margin-top:20px;flex-wrap:wrap">
           <button onClick="{{ dlHourly }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD hourly.csv</button>
-          <button onClick="{{ dlDaily }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFD437;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD daily-from-calls.csv</button>
+  
         </div>
         <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:16px;max-width:660px">
           <b style="color:#FFFFFF">hourly.csv</b> → put in <b style="color:#FFFFFF">data/</b>, replacing the existing file. Feeds the heatmap.<br>
-          <b style="color:#FFFFFF">daily-from-calls.csv</b> → Calls, Contacts and Leads per day per campaign, in the same
-          column order as <b style="color:#FFFFFF">all_clients_daily.csv</b>. Paste the rows in, then add Denom,
-          ListSize, AvgSTLsec and AGN's own rows by hand.
+          This page produces <b style="color:#FFFFFF">no daily figures</b>. Leads, calls and contacts per day come
+          from Campaign Summary, which counts them. The hourly buckets here are derived from dispositions and
+          are only ever used to shade the heatmap.
         </div>
       </div>
 
       <div style="background:#FFFFFF;border-radius:14px;padding:20px 22px;margin-top:14px">
-        <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">PREVIEW · daily-from-calls.csv</div>
+        <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:#7A8394">PREVIEW · hourly.csv</div>
         <div style="font:600 12px/1.7 'Barlow',monospace;color:#4A5468;margin-top:10px;white-space:pre;overflow-x:auto">{{ preview }}</div>
       </div>
 
@@ -459,8 +459,9 @@ class Component extends DCLogic {
     v.outCalls=this.fmt(b.calls);v.outContacts=this.fmt(b.contacts);v.outLeads=this.fmt(b.leads);
     v.outRows=this.fmt(b.rows.length);v.outSkipped=this.fmt(b.skipped);v.hasSkipped=b.skipped>0;
     v.dlHourly=()=>this.download('hourly.csv',this.hourlyCsv());
-    v.dlDaily=()=>this.download('daily-from-calls.csv',this.dailyCsv());
-    v.preview=this.dailyCsv().split('\n').slice(0,9).join('\n')||'—';
+    // No daily export. Daily numbers come from Campaign Summary, which counts them; this page only
+    // ever inferred them from dispositions, and an inferred number that looks like a counted one is a trap.
+    v.preview=this.hourlyCsv().split('\n').slice(0,7).map(l=>l.slice(0,110)).join('\n')||'—';
     return v;
   }
 }
