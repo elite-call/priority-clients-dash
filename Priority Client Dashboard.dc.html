@@ -401,15 +401,15 @@ select{font-family:'Barlow',sans-serif}
                 <div style="font:700 13px Barlow,sans-serif;color:{{ ex.sub }}">{{ rp.rank }}</div>
                 <div style="font:700 14.5px Barlow,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rp.name }}</div>
                 <div style="height:12px;border-radius:999px;background:{{ ex.line }}"><div style="height:100%;width:{{ rp.barW }};background:{{ ex.accent }};border-radius:999px"></div></div>
-                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.calls }}</div>
-                <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.contacts }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right;opacity:{{ rp.dim }}">{{ rp.calls }}</div>
+                <div style="font:600 14px Barlow,sans-serif;text-align:right;opacity:{{ rp.dim }}">{{ rp.contacts }}</div>
                 <div style="font:700 14px Barlow,sans-serif;text-align:right;color:{{ ex.accent }}">{{ rp.leads }}</div>
                 <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.conv }}</div>
                 <div style="font:600 14px Barlow,sans-serif;text-align:right">{{ rp.stl }}</div>
               </button>
             </sc-for>
           </div>
-          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:8px">Rep rows come from the per-rep feed, not the compiled daily totals. Click a rep to filter the drill-down to them.</div>
+          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:8px">{{ ex.repFoot }}</div>
         </div>
         </sc-if>
 
@@ -614,9 +614,16 @@ class Component extends DCLogic {
       const f=all[(r.Client||'').trim().toLowerCase()];if(!f)continue;
       const d=this.toIso(r.Date);if(!d)continue;
       const name=(r.Rep||'').trim();if(!name)continue;
-      const o=this.detailRow(f,d,this.segId(f,r.CampaignSegment));
       // Blank means "not ingested", not zero — Agent Summary is optional, so dials are often unknown.
       const n=v=>{v=(v==null?'':String(v)).trim();return v===''||isNaN(+v)?null:+v;};
+      const dEnd=this.toIso(r.DateEnd);
+      if(dEnd&&dEnd>d){
+        // One Agent Summary export can cover many days; keep it whole rather than splitting it.
+        (f.repRanges=f.repRanges||[]).push({from:d,to:dEnd,seg:this.segId(f,r.CampaignSegment),
+          rep:name,calls:n(r.Calls),contacts:n(r.Contacts)});
+        continue;
+      }
+      const o=this.detailRow(f,d,this.segId(f,r.CampaignSegment));
       o.reps.push([name,n(r.Calls),n(r.Contacts),n(r.Leads)||0]);
     }
   }
@@ -659,6 +666,11 @@ class Component extends DCLogic {
     }
     for(const r of Object.values(c.reps||{})){
       const f=all[(r.client||'').toLowerCase()];if(!f||!r.d||!r.rep)continue;
+      if(r.dEnd&&r.dEnd>r.d){
+        (f.repRanges=f.repRanges||[]).push({from:r.d,to:r.dEnd,seg:this.segId(f,r.seg),rep:r.rep,
+          calls:r.calls==null?null:r.calls,contacts:r.contacts==null?null:r.contacts});
+        continue;
+      }
       this.detailRow(f,r.d,this.segId(f,r.seg)).reps.push([r.rep,
         r.calls==null?null:r.calls,r.contacts==null?null:r.contacts,r.leads||0]);
     }
@@ -791,10 +803,14 @@ class Component extends DCLogic {
         if(rep&&rp[0]!==rep)continue;
         selCalls+=rp[1]||0;
         let x=out.reps.get(rp[0]);
-        if(!x){x={name:rp[0],calls:null,contacts:null,leads:0,stlW:0,stlC:0};out.reps.set(rp[0],x);}
-        if(rp[1]!=null)x.calls=(x.calls||0)+rp[1];
-        if(rp[2]!=null)x.contacts=(x.contacts||0)+rp[2];
+        if(!x){x={name:rp[0],calls:null,contacts:null,leads:0,stlW:0,stlC:0,
+          dCalls:new Set(),dContacts:new Set(),lByDate:new Map()};out.reps.set(rp[0],x);}
+        if(rp[1]!=null){x.calls=(x.calls||0)+rp[1];x.dCalls.add(r.d);}
+        if(rp[2]!=null){x.contacts=(x.contacts||0)+rp[2];x.dContacts.add(r.d);}
         x.leads+=rp[3]||0;
+        // Coverage is a property of the DAY, not of one campaign row: leads arrive from the
+        // Appointment Report and dials from Agent Summary, which segment independently.
+        if(rp[3])x.lByDate.set(r.d,(x.lByDate.get(r.d)||0)+rp[3]);
         if(rp.length>4&&rp[4]!=null){x.stlW+=rp[4]*(rp[1]||0);x.stlC+=rp[1]||0;}
         if(r.branch){
           let b=out.branches.get(r.branch);
@@ -809,6 +825,34 @@ class Component extends DCLogic {
         const wd=(new Date(r.d+'T00:00:00Z').getUTCDay()+6)%7;
         for(let h=0;h<14;h++)out.heat[wd][h]+=(arr[h]||0)*share;
       }
+    }
+    // A ranged Agent Summary counts only when the window contains it whole; a partial
+    // overlap cannot be split across days without inventing a distribution.
+    // Snapshot the days that came from DAILY rep rows, before any range adds its own days.
+    // Two campaigns over the same window are additive; only a daily export conflicts with a range.
+    const dailyDays=new Map();
+    out.reps.forEach((x,name)=>dailyDays.set(name,{c:new Set(x.dCalls),k:new Set(x.dContacts)}));
+    const seenRange=new Set();
+    for(const rr of f.repRanges||[]){
+      if(rr.from<s||rr.to>e)continue;
+      const rkey=rr.rep+'|'+rr.seg+'|'+rr.from+'|'+rr.to;
+      if(seenRange.has(rkey))continue;
+      seenRange.add(rkey);
+      if(seg&&rr.seg!==seg)continue;
+      if(branch)continue;
+      if(rep&&rr.rep!==rep)continue;
+      let x=out.reps.get(rr.rep);
+      if(!x){x={name:rr.rep,calls:null,contacts:null,leads:0,stlW:0,stlC:0,
+        dCalls:new Set(),dContacts:new Set(),lByDate:new Map()};out.reps.set(rr.rep,x);}
+      const days=[];
+      for(let t=Date.parse(rr.from+'T00:00:00Z');t<=Date.parse(rr.to+'T00:00:00Z');t+=864e5)
+        days.push(new Date(t).toISOString().slice(0,10));
+      // Daily rows already counted above win: a range is one undivided total, so an overlapping
+      // day cannot be subtracted back out. Drop the range and say so rather than double-count.
+      const pre=dailyDays.get(rr.rep);
+      if(pre&&days.some(dd=>pre.c.has(dd)||pre.k.has(dd))){out.repOverlap=true;continue;}
+      if(rr.calls!=null){x.calls=(x.calls||0)+rr.calls;days.forEach(d=>x.dCalls.add(d));}
+      if(rr.contacts!=null){x.contacts=(x.contacts||0)+rr.contacts;days.forEach(d=>x.dContacts.add(d));}
     }
     for(const b of f.branchRows||[]){
       if(b.d<s||b.d>e)continue;
@@ -861,6 +905,7 @@ class Component extends DCLogic {
   oppRate(a){return (a.opps!=null&&a.leads)?a.opps/a.leads*100:null}
   pct(v,dp){return v==null?'—':v.toFixed(dp==null?1:dp)+'%'}
   dash(v){return v==null?'—':this.fmt(v)}
+  shortDate(d){const p=String(d).split('-');return p.length<3?String(d):['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1]+' '+(+p[2]);}
   fmtStl(s){return s<120?s+'s':Math.round(s/60)+'m'}
   fmt(n){return (n||0).toLocaleString('en-US')}
   fmtDate(d){const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const t=new Date(d+'T00:00:00Z');return m[t.getUTCMonth()]+' '+t.getUTCDate();}
@@ -1031,12 +1076,31 @@ class Component extends DCLogic {
     const reps=[...a.reps.values()].sort((x,y)=>y.leads-x.leads);
     const maxL=Math.max(...reps.map(r=>r.leads),1);
     ex.reps=reps.slice(0,16).map((r,i)=>{
-      const dn=f.convContactsDenom==='calls'?r.calls:r.contacts;
+      const byCalls=f.convContactsDenom==='calls';
+      const dn=byCalls?r.calls:r.contacts,have=byCalls?r.dCalls:r.dContacts;
+      let missing=0;
+      for(const d of r.lByDate.keys())if(!have.has(d))missing++;
+      const full=dn&&!missing;
       return{rank:i+1,name:r.name,calls:this.dash(r.calls),contacts:this.dash(r.contacts),leads:this.fmt(r.leads),
-        conv:dn?((r.leads/dn*100).toFixed(1)+'%'):'—',stl:r.stlC?Math.round(r.stlW/r.stlC)+'s':'—',
+        partial:!!(dn&&missing),
+        dim:(dn&&missing)?0.55:1,
+        conv:full?((r.leads/dn*100).toFixed(1)+'%'):'—',stl:r.stlC?Math.round(r.stlW/r.stlC)+'s':'—',
         barW:Math.max(2,Math.round(r.leads/maxL*100))+'%',
         go:()=>this.setState({rep:r.name,tab:'overview'}),
         hl:r.name===rep?cfg.soft:'transparent'};});
+    // Name the ranges when the two feeds disagree, so a partial denominator reads as partial.
+    const gaps=ex.reps.filter(r=>r.partial).length;
+    let dSet=new Set(),lSet=new Set();
+    for(const r of reps){
+      (f.convContactsDenom==='calls'?r.dCalls:r.dContacts).forEach(d=>dSet.add(d));
+      r.lByDate.forEach((v,d)=>lSet.add(d));
+    }
+    const span=s=>{const a=[...s].sort();return a.length?(a.length===1?this.shortDate(a[0]):this.shortDate(a[0])+'–'+this.shortDate(a[a.length-1])):'no days';};
+    ex.repFoot=a.repOverlap
+      ? 'A multi-day Agent Summary overlaps days that already have their own export, so it was left out to avoid double-counting. Re-ingest it ending the day before your first daily export.'
+      : (gaps
+        ? 'Calls and contacts cover '+span(dSet)+'; leads cover '+span(lSet)+'. Conversion is withheld where the ranges differ — ingest Agent Summary for the missing days.'
+        : 'Rep rows come from the per-rep feed, not the compiled daily totals. Click a rep to filter the drill-down to them.');
     ex.topMini=reps.slice(0,3).map((r,i)=>({rank:i+1,name:r.name,leads:this.fmt(r.leads)}));
     // CAMPAIGNS table reads segment rows; BRANCHES table reads detail rows.
     let rows;

@@ -38,6 +38,7 @@ select,input{font-family:'Barlow',sans-serif}
       <div style="font:700 17px Barlow,sans-serif;color:#17233F">Drop tonight's CSVs here</div>
       <div style="font:600 13px/1.6 Barlow,sans-serif;color:#7A8394;margin-top:7px">
         Campaign Summary · Appointment Report (Leads) · Agent Summary by Campaign · Call Details<br>
+        Agent Summary may cover a whole date range in one file — no need for one export per day<br>
         also takes hourly.csv from the aggregator, daily backfill tables, and a cache JSON to restore
       </div>
       <label style="display:inline-block;margin-top:16px;font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#2A5CE6;border-radius:999px;padding:10px 22px;cursor:pointer">
@@ -491,8 +492,8 @@ class Component extends DCLogic {
       const dates=this.fileDates(f.name);
       const single=dates&&dates[0]===dates[1];
       add.push({id:Math.random().toString(36).slice(2),file:f,name:f.name,type:s.type,dates,
-        date:dates?dates[0]:'',client:'',seg:'',
-        needsDate:s.type==='agentsummary'||(s.type==='campaignsummary'&&!single),
+        date:dates?dates[0]:'',dateEnd:(dates&&dates[1]&&dates[1]!==dates[0])?dates[1]:'',client:'',seg:'',
+        needsDate:(s.type==='agentsummary'&&!dates)||(s.type==='campaignsummary'&&!single),
         needsClient:s.type==='agentsummary'});
     }
     // Receipt of exactly what this drop handed over, so a stray file can be traced to its batch.
@@ -585,19 +586,23 @@ class Component extends DCLogic {
     if(!p.date)throw new Error('needs a date');
     if(!p.client||!p.seg)throw new Error('needs a client and segment');
     const rows=await this.rowsOf(p.file,v=>this.setState({progress:v}));
+    // The report exports a whole date range as one set of rep totals. Rather than force one
+    // export per day, keep the range on the row and let the dashboard use it whole.
+    const end=(p.dateEnd&&p.dateEnd>p.date)?p.dateEnd:'';
     let n=0;
     for(const r of rows){
       const rep=(r.Rep||'').trim();
       if(!rep||/^total$/i.test(rep))continue;
-      const key=this.k(p.date,p.client,p.seg,rep);
-      if(!cache.reps[key])cache.reps[key]={d:p.date,client:p.client,seg:p.seg,rep,calls:null,contacts:null,leads:null};
+      const key=this.k(p.date+(end?'~'+end:''),p.client,p.seg,rep);
+      if(!cache.reps[key])cache.reps[key]={d:p.date,dEnd:end,client:p.client,seg:p.seg,rep,calls:null,contacts:null,leads:null};
       const o=cache.reps[key];
+      o.dEnd=end;
       o.calls=this.num(r.Dialed);
       o.contacts=this.num(r.Contacts);
-      if(o.leads==null)o.leads=this.num(r['Sale/Lead/App']);
+      if(!end&&o.leads==null)o.leads=this.num(r['Sale/Lead/App']);
       n++;
     }
-    return n+' reps for '+p.client+' '+p.seg+' on '+p.date;
+    return n+' reps for '+p.client+' '+p.seg+(end?' over '+p.date+' → '+end:' on '+p.date);
   }
   async doCallDetails(cache,p){
     const R=this.rules(),D=this.disp();
@@ -742,8 +747,9 @@ class Component extends DCLogic {
     const c=this.state.cache||this.blank();
     const rows=Object.values(c.reps).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.rep<b.rep?-1:1))
       .map(o=>[o.d,o.client,o.seg,'"'+String(o.rep).replace(/"/g,'""')+'"',
-        o.calls==null?'':o.calls,o.contacts==null?'':o.contacts,o.leads==null?'':o.leads].join(','));
-    return this.csv('Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads',rows);
+        o.calls==null?'':o.calls,o.contacts==null?'':o.contacts,o.leads==null?'':o.leads,
+        o.dEnd||''].join(','));
+    return this.csv('Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd',rows);
   }
   branchesCsv(){
     const c=this.state.cache||this.blank();
@@ -785,7 +791,9 @@ class Component extends DCLogic {
         let detail=bits.join(' · '),ink='#7A8394';
         if(!p.type){detail='Unrecognised columns — this is not one of the four reports';ink='#C8352E';}
         else if(p.type==='campaignsummary'&&p.needsDate){detail='Covers a range; these are totals, so pick the single day it belongs to';ink='#B8860B';}
-        else if(p.type==='agentsummary'){detail='No campaign or date column — tag it';ink='#B8860B';}
+        else if(p.type==='agentsummary'){detail=p.dateEnd
+          ?('Covers '+p.date+' → '+p.dateEnd+' as one total — tag the campaign')
+          :'No campaign or date column — tag it';ink='#B8860B';}
         return {name:p.name,typeLabel:t?t.label:'Unknown report',tint:t?t.tint:'#C8352E',
           detail,detailInk:ink,
           needsDate:!!p.needsDate,needsClient:!!p.needsClient,
