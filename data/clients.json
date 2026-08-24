@@ -100,6 +100,100 @@
       "note": "",
       "statLabel": "LIST · LEADS/RECORDS",
       "marquee": "opps"
+    },
+    "abc": {
+      "name": "ABC Plumbing",
+      "segments": [
+        {
+          "id": "active",
+          "name": "ACTIVE"
+        },
+        {
+          "id": "cross",
+          "name": "CROSS"
+        },
+        {
+          "id": "inactive",
+          "name": "INACTIVE"
+        },
+        {
+          "id": "acq",
+          "name": "ACQ"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "List conversion",
+        "pct": null,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "CONTACTS",
+      "note": "",
+      "statLabel": "INTERNAL · LEADS/CONTACTS",
+      "marquee": "totals"
+    },
+    "hail": {
+      "name": "Hail911",
+      "segments": [
+        {
+          "id": "residential",
+          "name": "RESIDENTIAL"
+        },
+        {
+          "id": "commercial",
+          "name": "COMMERCIAL"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "List conversion",
+        "pct": null,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "CONTACTS",
+      "note": "Storm restoration · RR26 campaigns",
+      "statLabel": "INTERNAL · LEADS/CONTACTS",
+      "marquee": "totals"
+    },
+    "other": {
+      "name": "All Other · HVAC · PL · ELEC",
+      "segments": [
+        {
+          "id": "active",
+          "name": "ACTIVE"
+        },
+        {
+          "id": "inactive",
+          "name": "INACTIVE"
+        },
+        {
+          "id": "renew",
+          "name": "RENEW"
+        },
+        {
+          "id": "other",
+          "name": "OTHER"
+        }
+      ],
+      "branches": null,
+      "convContactsDenom": "contacts",
+      "convTotalsDenom": "listSize",
+      "target": {
+        "label": "List conversion",
+        "pct": null,
+        "actualPct": null
+      },
+      "convLabel": "CONVERSION · LEADS/LIST",
+      "contactsLabel": "CONTACTS",
+      "note": "Catch-all for clients without their own card",
+      "statLabel": "INTERNAL · LEADS/CONTACTS",
+      "marquee": "totals"
     }
   }
 }
