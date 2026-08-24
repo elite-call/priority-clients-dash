@@ -546,7 +546,7 @@ class Component extends DCLogic {
     return used+' campaigns → '+fresh.size+' segment rows on '+date+
       ', record lists from '+uniq+' unique campaigns'+
       (dropped?', replaced '+dropped+' aggregate row'+(dropped===1?'':'s'):'')+
-      (skipped?', '+skipped+' outside the four clients':'');
+      (skipped?', '+skipped+' outside the tracked books':'');
   }
   async doAppointments(cache,p){
     const R=this.rules();if(!R)throw new Error('campaign-rules.js did not load');
@@ -580,7 +580,7 @@ class Component extends DCLogic {
     const ds=[...dates].sort();
     return leads+' appointments ('+opps+' sales opps) over '+ds.length+' date'+(ds.length===1?'':'s')+
       (ds.length?' ('+ds[0]+(ds.length>1?' → '+ds[ds.length-1]:'')+')':'')+
-      ', '+withBranch+' with a branch'+(skipped?', '+skipped+' outside the four clients':'');
+      ', '+withBranch+' with a branch'+(skipped?', '+skipped+' outside the tracked books':'');
   }
   async doAgentSummary(cache,p){
     if(!p.date)throw new Error('needs a date');
@@ -632,7 +632,7 @@ class Component extends DCLogic {
       if(D.defaultContact(client,stat))o.contacts[i]++;
       if(D.defaultLead(client,stat))o.leads[i]++;
     },v=>this.setState({progress:v}));
-    return used+' calls → '+fresh.size+' hourly rows'+(skipped?', '+skipped+' outside the four clients':'')+
+    return used+' calls → '+fresh.size+' hourly rows'+(skipped?', '+skipped+' outside the tracked books':'')+
       ' · default disposition rules (use the aggregator to control them)';
   }
   async doHourly(cache,p){
@@ -882,7 +882,10 @@ class Component extends DCLogic {
     const ds=[...dates].filter(Boolean).sort();
     v.hasCoverage=ds.length>0;
     v.cacheRange=ds.length?(this.fmtDate(ds[0])+' → '+this.fmtDate(ds[ds.length-1])+' · '+ds.length+' dates'):'Empty — nothing ingested yet';
-    const CL=['OHS','SE','A1G','AGN'];
+    // From campaign-rules.js, so a book of business added there shows up here
+    // instead of being ingested into a coverage grid that cannot display it.
+    const R=this.rules();
+    const CL=(R&&R.CLIENTS)?R.CLIENTS:['OHS','SE','A1G','AGN'];
     const pres=(bucket,d,cl)=>{
       for(const key in c[bucket]){const o=c[bucket][key];if(o.d===d&&o.client===cl)return true;}
       return false;

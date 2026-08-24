@@ -1,0 +1,106 @@
+WHAT TO DO WITH THESE
+=====================
+
+Six files go in the repo. One goes in Apps Script, not the repo.
+
+  Priority Client Dashboard.dc.html  ->  repo root
+  Daily Data Ingestion.dc.html       ->  repo root
+  campaign-rules.js                  ->  repo root
+  data/clients.json                  ->  data/
+  assets/abc-logo-crop.png           ->  assets/
+  assets/hail911-logo.png            ->  assets/
+
+  apps-script/nightly-ingest.gs      ->  paste into the Apps Script editor
+
+Do not touch the four data CSVs in data/. Nothing here replaces them.
+
+
+ORDER OF OPERATIONS
+===================
+
+1. Push the six repo files. Open the dashboard and confirm the rail shows ABC,
+   Hail911, All Other, Floor Quality and Appointment Mix, all reading dashes.
+
+2. Paste nightly-ingest.gs into the Apps Script editor, replacing what is there.
+   Script Properties needed: DIALEDIN_USER, DIALEDIN_PASS, GITHUB_TOKEN.
+   Check File > Project Settings > Time zone is Central.
+
+3. Run checkCampaignBuckets(). It prints every live campaign under each of the
+   fifteen groups. This is the step that proves the new rules before any data
+   moves: look for a campaign sitting under "not one of the four clients" that
+   you expected to see under ABC, Hail911 or Other, and tell me its exact name.
+
+4. Run runNightlyForDate() (set to 08/21/2026). It opens a run and chains the
+   phases about two minutes apart. Do not wait at the screen; come back in
+   fifteen minutes and run nightlyStatus().
+
+5. When every phase reads "done", check the repo commits, then reload the
+   dashboard. ABC, Hail911 and Other should carry real numbers for 8/21.
+
+6. Run installNightlyTrigger(). One trigger, 8 PM, same day.
+
+
+EVERY MORNING
+=============
+
+  nightlyStatus()   what landed last night
+  runCatchUp()      re-run only the phases that failed or never ran
+
+runCatchUp is safe to run more than once. Each phase replaces its own rows
+rather than appending, so a repeat cannot double-count.
+
+
+WHAT CHANGED
+============
+
+Dashboard
+  - PRIORITY ONLY / ALL BOOKS toggle removed; everything shows, always.
+  - Right rail of cards for the books of business outside the priority four:
+    ABC Plumbing, Hail911 (residential / commercial), All Other HVAC-PL-ELEC,
+    Floor Quality, Appointment Mix, plus a reserved slot for the next client.
+  - Real ABC and Hail911 logos. The ABC one is cropped out of their website
+    header, so it carries its own dark background. A transparent version would
+    sit better if you can get one.
+  - Rail cards drill down like the priority panels, and the drill-down's client
+    list now includes every book, so you can move between them from inside.
+  - New APPT MIX tab: share of leads by call status, per campaign.
+  - Auto-rotate is a header toggle, and now visits every tab of every card
+    rather than four overviews.
+  - All values on the new cards are dashes. No source is mapped to them yet.
+
+Campaign rules
+  - Seven books of business instead of four:
+      starts with A1G   -> A1G      PRIORITY / STL
+      starts with OHS   -> OHS      FP5 / PROB ENROLL
+      starts with ABC   -> ABC      ACTIVE / CROSS / INACTIVE / ACQ
+      contains SE26     -> SE       ACTIVE / RENEW
+      starts with AGN   -> AGN      STL
+      contains RR26     -> HAIL     RESIDENTIAL
+      contains CR26     -> HAIL     COMMERCIAL
+      contains HS26     -> OTHER    ACTIVE / RENEW / OTHER
+  - The order matters twice over. ABC and A1G campaign names both contain HS26,
+    so every named book is tested before the HS26 catch-all; SE26 likewise. And
+    INACTIVE contains ACTIVE as a substring, so it is tested first — without
+    that, PROPERSHOP DAL HS26C INACTIVE 0731 filed itself as ACTIVE.
+  - checkCampaignBuckets() now prints the campaigns it ignored, not just a count.
+    On 8/24 those were six names carrying no client code at all: test buckets,
+    _MANUAL_CALL_, and disposition holding queues.
+
+Ingestion page
+  - Its coverage grid reads the client list from campaign-rules.js, so it shows
+    the new books instead of accepting rows it cannot display.
+
+Apps Script
+  - The nightly run is now a chain of seven small phases instead of one long
+    function, so it cannot hit the six-minute execution limit:
+      campaign -> appointments -> asc0..asc3 -> calldetails
+  - A phase that fails is recorded and the chain CONTINUES. One bad report no
+    longer costs the whole night.
+  - nightlyStatus() and runCatchUp() added for the morning after.
+  - reps.csv writes are field-level: the appointments phase writes only Leads,
+    each Agent Summary chunk writes only Calls and Contacts. Neither can wipe
+    the other, which is what let the phases be split at all.
+  - Call Details keeps a page cursor and banked hour counts, so it resumes
+    mid-report rather than starting the day over.
+  - Agent Summary pulls went from 6 to 15 groups, with one CSRF token per run
+    instead of one per group.

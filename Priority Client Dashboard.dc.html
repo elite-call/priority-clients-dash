@@ -31,6 +31,9 @@ select{font-family:'Barlow',sans-serif}
   <div data-screen-label="Header" style="display:flex;align-items:center;gap:18px;padding:9px 20px;background:#FFFFFF;border-bottom:1px solid rgba(15,25,60,.08);flex:none">
     <img src="uploads/emblem_horizontal_signature.png" alt="Elite Call" style="height:32px;display:block">
     <div style="font:700 12px Barlow,sans-serif;letter-spacing:.22em;color:#5A6472;border-left:1px solid rgba(15,25,60,.15);padding-left:18px">PRIORITY CLIENT PERFORMANCE</div>
+    <button onClick="{{ toggleAuto }}" title="Auto-rotate the wall display" style="flex:none;display:flex;align-items:center;gap:6px;font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:{{ autoInk }};background:{{ autoBg }};border:1.5px solid {{ autoBd }};border-radius:999px;padding:5px 11px">
+      <span style="width:6px;height:6px;border-radius:50%;background:{{ autoDot }}"></span>{{ autoLabel }}
+    </button>
     <div style="flex:1"></div>
     <sc-if value="{{ auto }}">
       <div style="font:700 11px Barlow,sans-serif;letter-spacing:.14em;color:#2A5CE6;background:rgba(42,92,230,.09);border:1px solid rgba(42,92,230,.25);border-radius:999px;padding:5px 14px">AUTO-CYCLING · INTERACT TO PAUSE</div>
@@ -40,7 +43,8 @@ select{font-family:'Barlow',sans-serif}
   </div>
 
   <sc-if value="{{ gridOn }}" hint-placeholder-val="{{ true }}">
-  <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(min-content,1fr));gap:13px;padding:13px;min-height:0;overflow-y:auto">
+  <div style="flex:1;display:flex;gap:13px;padding:13px;min-height:0;min-width:0">
+  <div style="flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:repeat(2,minmax(min-content,1fr));gap:13px;min-height:0;overflow-y:auto">
 
     <div data-screen-label="OHS panel" ref="{{ ohsPanelRef }}" style="background:#FFFFFF;border-radius:14px;box-shadow:0 1px 5px rgba(15,25,60,.07);display:flex;flex-direction:column">
       <div style="height:5px;flex:none;border-radius:14px 14px 0 0;background:linear-gradient(90deg,#3D5EE0 0 72%,#FFD437 72% 100%)"></div>
@@ -66,7 +70,7 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B93A6">{{ ohs.segNote }}</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#17233F">{{ ohs.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590">NET CONTACTS</div></div>
@@ -78,13 +82,13 @@ select{font-family:'Barlow',sans-serif}
         <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6B7590;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#17233F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ohs.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#6B7590;flex:none">{{ ohs.topLeads }}</span></div>
       </sc-if>
       <div style="flex:none;padding:0 18px 12px">
-        <div style="background:rgba(61,94,224,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+        <div style="background:rgba(61,94,224,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px">
           <div style="flex:none">
             <div style="font:800 20px/1 Barlow,sans-serif;color:#2A47B8">{{ ohs.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6B7590;white-space:nowrap">{{ ohs.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
-          <div style="flex:1;min-width:0">
+          <div style="flex:1 1 130px;min-width:130px">
             <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#3D5EE0">FP5 · 3-PASS LIST CONVERSION</div>
             <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ ohs.targetBarW }};background:#3D5EE0;border-radius:999px"></div></div>
           </div>
@@ -122,7 +126,7 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#8B8F98">{{ se.segNote }}</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#1C1C1E">{{ se.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E">CONTACTS</div></div>
@@ -134,13 +138,13 @@ select{font-family:'Barlow',sans-serif}
         <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#6E747E;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ se.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#6E747E;flex:none">{{ se.topLeads }}</span></div>
       </sc-if>
       <div style="flex:none;padding:0 18px 12px">
-        <div style="background:rgba(200,16,46,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+        <div style="background:rgba(200,16,46,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px">
           <div style="flex:none">
             <div style="font:800 20px/1 Barlow,sans-serif;color:#9E0D24">{{ se.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#6E747E;white-space:nowrap">{{ se.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
-          <div style="flex:1;min-width:0">
+          <div style="flex:1 1 130px;min-width:130px">
             <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#C8102E">ACTIVE · 3-PASS LIST CONVERSION</div>
             <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ se.targetBarW }};background:#C8102E;border-radius:999px"></div></div>
           </div>
@@ -177,7 +181,7 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:6px;font:700 clamp(10px,0.75vw,13px) Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">AVG SPEED-TO-LEAD</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#12293E">{{ agn.quotes }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288">QUOTES TOUCHED</div></div>
@@ -188,13 +192,13 @@ select{font-family:'Barlow',sans-serif}
         <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#5E7288;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#12293E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ agn.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#5E7288;flex:none">{{ agn.topLeads }}</span></div>
       </sc-if>
       <div style="flex:none;padding:0 18px 12px">
-        <div style="background:rgba(46,124,192,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+        <div style="background:rgba(46,124,192,.06);border-radius:10px;padding:8px 13px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px">
           <div style="flex:none">
             <div style="font:800 20px/1 Barlow,sans-serif;color:#1F639E">{{ agn.convContacts }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#5E7288;white-space:nowrap">{{ agn.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(15,25,60,.12);flex:none"></div>
-          <div style="flex:1;min-width:0">
+          <div style="flex:1 1 130px;min-width:130px">
             <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#2E7CC0">QUOTE CONVERSION TARGET</div>
             <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(15,25,60,.11)"><div style="height:100%;width:{{ agn.targetBarW }};background:#2E7CC0;border-radius:999px"></div></div>
           </div>
@@ -235,7 +239,7 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:600 10.5px Barlow,sans-serif;color:#9C8C7C">Company-wide average</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:9px">
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px">
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.leads }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">LEADS</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.calls }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CALLS PLACED</div></div>
           <div><div style="font:800 clamp(16px,1.9vw,30px)/1.05 Barlow,sans-serif;color:#33231A">{{ a1g.contacts }}</div><div style="margin-top:2px;font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A">CONTACTS</div></div>
@@ -248,13 +252,13 @@ select{font-family:'Barlow',sans-serif}
         <div style="flex:none;padding:0 18px 6px;display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font:700 9.5px Barlow,sans-serif;letter-spacing:.12em;color:#8A7A6A;flex:none;white-space:nowrap">TOP PRODUCER</span><span style="font:700 12px Barlow,sans-serif;color:#33231A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a1g.topName }}</span><span style="font:600 11px Barlow,sans-serif;color:#8A7A6A;flex:none">{{ a1g.topLeads }}</span></div>
       </sc-if>
       <div style="flex:none;padding:0 18px 12px">
-        <div style="background:rgba(185,43,39,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;gap:14px">
+        <div style="background:rgba(185,43,39,.05);border-radius:10px;padding:8px 13px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px">
           <div style="flex:none">
             <div style="font:800 20px/1 Barlow,sans-serif;color:#93221F">{{ a1g.secondVal }}</div>
             <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A7A6A;white-space:nowrap">{{ a1g.statLabel }}</div>
           </div>
           <div style="width:1px;height:32px;background:rgba(51,35,26,.14);flex:none"></div>
-          <div style="flex:1;min-width:0">
+          <div style="flex:1 1 130px;min-width:130px">
             <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.13em;color:#B92B27">PRIORITY · 3-PASS LIST CONVERSION</div>
             <div style="height:6px;margin-top:7px;border-radius:999px;background:rgba(51,35,26,.12)"><div style="height:100%;width:{{ a1g.targetBarW }};background:#B92B27;border-radius:999px"></div></div>
           </div>
@@ -263,6 +267,121 @@ select{font-family:'Barlow',sans-serif}
             <div style="margin-top:3px;font:700 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A7A6A">{{ a1g.targetNote }}</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+
+    <div data-screen-label="Non-priority rail" style="width:232px;flex:none;display:flex;flex-direction:column;gap:11px;overflow-y:auto;overflow-x:hidden;min-height:0">
+      <div style="font:700 9.5px Barlow,sans-serif;letter-spacing:.16em;color:#8A93A6;padding:2px 2px 0">OTHER BOOKS OF BUSINESS</div>
+
+    <div data-screen-label="ABC panel" style="flex:none;background:#FFFFFF;border-radius:12px;box-shadow:0 1px 5px rgba(15,25,60,.07);overflow:hidden">
+      <div style="height:4px;background:linear-gradient(90deg,#A4CE4E 0 58%,#1C4E9D 58% 100%)"></div>
+      <div style="padding:11px 13px 13px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><img src="assets/abc-logo-crop.png" alt="ABC" style="height:34px;width:auto;display:block;border-radius:4px"></div>
+          <button onClick="{{ goAbc }}" style="flex:none;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#1C4E9D;border:none;border-radius:999px;padding:5px 9px">EXPLORE</button>
+        </div>
+        <div style="font:600 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6;margin-top:6px">PLUMBING · SEWER · HVAC · ELEC</div>
+        
+        <div style="margin-top:10px;font:800 32px/1 Barlow,sans-serif;color:#B6BDCA">—</div>
+        <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.12em;color:#8A93A6">CONVERSION</div>
+        <div style="margin-top:11px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 8px">
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">LEADS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CALLS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CONNECT %</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">DIALS/HR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="HAIL panel" style="flex:none;background:#FFFFFF;border-radius:12px;box-shadow:0 1px 5px rgba(15,25,60,.07);overflow:hidden">
+      <div style="height:4px;background:linear-gradient(90deg,#1A1A1A 0 46%,#D8232A 46% 100%)"></div>
+      <div style="padding:11px 13px 13px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><img src="assets/hail911-logo.png" alt="Hail911" style="height:30px;width:auto;display:block"></div>
+          <button onClick="{{ goHail }}" style="flex:none;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#D8232A;border:none;border-radius:999px;padding:5px 9px">EXPLORE</button>
+        </div>
+        <div style="font:600 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6;margin-top:6px">STORM RESTORATION</div>
+        <div style="display:flex;gap:5px;margin-top:8px"><button onClick="{{ setHailResi }}" style="font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:{{ hailResiInk }};background:{{ hailResiInkBg }};border:none;border-radius:999px;padding:4px 9px">RESI</button><button onClick="{{ setHailComm }}" style="font:700 9px Barlow,sans-serif;letter-spacing:.1em;color:{{ hailCommInk }};background:{{ hailCommInkBg }};border:none;border-radius:999px;padding:4px 9px">COMM</button></div>
+        <div style="margin-top:10px;font:800 32px/1 Barlow,sans-serif;color:#B6BDCA">—</div>
+        <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.12em;color:#8A93A6">CONVERSION</div>
+        <div style="margin-top:11px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 8px">
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">LEADS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CALLS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CONNECT %</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">DIALS/HR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="OTHER panel" style="flex:none;background:#FFFFFF;border-radius:12px;box-shadow:0 1px 5px rgba(15,25,60,.07);overflow:hidden">
+      <div style="height:4px;background:linear-gradient(90deg,#17233F 0 72%,#FFD437 72% 100%)"></div>
+      <div style="padding:11px 13px 13px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px">
+            <svg width="18" height="14" viewBox="0 0 18 14" style="flex:none"><path d="M1 12 L9 2 L17 12" style="fill:none;stroke:#17233F;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"></path></svg>
+            <div><div style="font:800 13px/1 Barlow,sans-serif;color:#17233F;letter-spacing:-.01em">All Other</div><div style="font:700 7.5px/1.3 Barlow,sans-serif;letter-spacing:.1em;color:#9AA2B1">ELITE CALL BOOK</div></div>
+          </div></div>
+          <button onClick="{{ goOther }}" style="flex:none;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#17233F;border:none;border-radius:999px;padding:5px 9px">EXPLORE</button>
+        </div>
+        <div style="font:600 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6;margin-top:6px">HVAC · PL · ELEC</div>
+        
+        <div style="margin-top:10px;font:800 32px/1 Barlow,sans-serif;color:#B6BDCA">—</div>
+        <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.12em;color:#8A93A6">CONVERSION</div>
+        <div style="margin-top:11px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 8px">
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">LEADS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CALLS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CONNECT %</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">DIALS/HR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="Floor panel" style="flex:none;background:#FFFFFF;border-radius:12px;box-shadow:0 1px 5px rgba(15,25,60,.07);overflow:hidden">
+      <div style="height:4px;background:#C9CED8"></div>
+      <div style="padding:11px 13px 13px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><div style="font:800 14px/1.1 Barlow,sans-serif;color:#3E4757">Floor Quality</div></div>
+          <button onClick="{{ goFloor }}" style="flex:none;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#FFFFFF;background:#5A6472;border:none;border-radius:999px;padding:5px 9px">EXPLORE</button>
+        </div>
+        <div style="font:600 9px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6;margin-top:6px">ACROSS ALL CAMPAIGNS</div>
+        
+        <div style="margin-top:10px;font:800 32px/1 Barlow,sans-serif;color:#B6BDCA">—</div>
+        <div style="margin-top:3px;font:700 9px Barlow,sans-serif;letter-spacing:.12em;color:#8A93A6">CONNECT %</div>
+        <div style="margin-top:11px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px 8px">
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CONNECTS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">DIALS/HR</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">AVG ATTEMPTS</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">TALK TIME</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">AVG TALK</div></div>
+          <div><div style="font:800 17px/1 Barlow,sans-serif;color:#B6BDCA">—</div><div style="margin-top:2px;font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">CONTACT %</div></div>
+        </div>
+      </div>
+    </div>
+
+      <button onClick="{{ goMix }}" data-screen-label="Appointment mix panel" style="text-align:left;flex:none;background:#FFFFFF;border:none;border-radius:12px;box-shadow:0 1px 5px rgba(15,25,60,.07);overflow:hidden;padding:0">
+        <div style="height:4px;background:#C9CED8"></div>
+        <div style="padding:11px 13px 13px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <div style="flex:1;font:800 15px/1.1 Barlow,sans-serif;color:#3E4757">Appointment Mix</div>
+            <div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6">EXPLORE ▸</div>
+          </div>
+          <div style="font:600 9.5px Barlow,sans-serif;letter-spacing:.1em;color:#8A93A6;margin-top:1px">SHARE OF LEADS BY CALL STATUS</div>
+          <div style="margin-top:11px;display:flex;flex-direction:column;gap:7px">
+            <sc-for list="{{ mixRows }}" as="mx" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1;min-width:0;font:600 10.5px Barlow,sans-serif;color:#5A6472;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ mx.label }}</div>
+                <div style="flex:none;font:800 12px Barlow,sans-serif;color:#B6BDCA">—</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </button>
+
+      <div style="flex:none;border:1.5px dashed rgba(15,25,60,.18);border-radius:12px;padding:16px 13px;text-align:center">
+        <div style="font:700 10px Barlow,sans-serif;letter-spacing:.14em;color:#A8B0BE">NEXT CLIENT</div>
+        <div style="margin-top:4px;font:600 10.5px/1.5 Barlow,sans-serif;color:#A8B0BE">Reserved slot — add a card when the book of business is confirmed</div>
       </div>
     </div>
   </div>
@@ -437,6 +556,28 @@ select{font-family:'Barlow',sans-serif}
         </div>
         </sc-if>
 
+        <sc-if value="{{ ex.tabMix }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;animation:ecFade .25s ease">
+          <div style="display:grid;grid-template-columns:1.6fr repeat(6,minmax(0,1fr));gap:10px;padding:0 12px 8px;font:700 10.5px Barlow,sans-serif;letter-spacing:.12em;color:{{ ex.sub }}">
+            <div>{{ ex.campsLabelUpper }}</div>
+            <sc-for list="{{ ex.mixCols }}" as="mc" hint-placeholder-count="6">
+              <div style="text-align:right">{{ mc }}</div>
+            </sc-for>
+          </div>
+          <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:4px">
+            <sc-for list="{{ ex.mixRows }}" as="mr" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1.6fr repeat(6,minmax(0,1fr));gap:10px;align-items:center;padding:9px 12px;border-radius:9px;background:{{ ex.soft }}">
+                <div style="font:700 14px Barlow,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ mr.name }}</div>
+                <sc-for list="{{ mr.cells }}" as="mcell" hint-placeholder-count="6">
+                  <div style="text-align:right;font:700 14px Barlow,sans-serif;color:{{ ex.sub }}">{{ mcell.v }}</div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};padding-top:8px">Share of leads by call status. Awaiting the status breakdown from the Appointment Report — ingestion carries the counts but not yet the split.</div>
+        </div>
+        </sc-if>
+
         <sc-if value="{{ ex.tabHeat }}">
         <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:5px;animation:ecFade .25s ease">
           <div style="display:grid;grid-template-columns:44px repeat(14,1fr);gap:5px;font:700 10.5px Barlow,sans-serif;letter-spacing:.06em;color:{{ ex.sub }};text-align:center">
@@ -485,8 +626,9 @@ select{font-family:'Barlow',sans-serif}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;idleSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:45,&quot;min&quot;:10,&quot;max&quot;:300,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;rotateSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:12,&quot;min&quot;:5,&quot;max&quot;:60,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Wall display&quot;},&quot;stlTargetSec&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:60,&quot;min&quot;:10,&quot;max&quot;:300,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Targets&quot;}}">
 class Component extends DCLogic {
-  state = { data:null, ranges:{ohs:'this_month',se:'this_month',agn:'this_month',a1g:'this_month'},
-    segs:{ohs:'',se:'',agn:'',a1g:''},
+  state = { data:null, ranges:{ohs:'this_month',se:'this_month',agn:'this_month',a1g:'this_month',
+      abc:'this_month',hail:'this_month',other:'this_month',floor:'this_month'},
+    segs:{ohs:'',se:'',agn:'',a1g:'',abc:'',hail:'',other:'',floor:''},
     expanded:null, tab:'overview', exRange:'this_month', branch:null, rep:null, auto:false, closing:false };
   getRef(k){
     this._refCbs=this._refCbs||{};this._els=this._els||{};
@@ -504,7 +646,7 @@ class Component extends DCLogic {
     setTimeout(()=>{if(el.isConnected){el.style.transition='';el.style.transformOrigin='';}},dur+60);
   }
   getEls(){
-    const out=Object.assign({},this._els||{});const KEYS=['ohs','se','agn','a1g'];
+    const out=Object.assign({},this._els||{});const KEYS=['ohs','se','agn','a1g','abc','hail','other'];
     for(const k of KEYS)if(!out['panel_'+k]){const el=document.querySelector('[data-screen-label="'+k.toUpperCase()+' panel"]');if(el)out['panel_'+k]=el;}
     const dd=document.querySelector('[data-screen-label="Drill-down"]');
     if(dd){
@@ -522,7 +664,7 @@ class Component extends DCLogic {
     run();
   }
   closeDrill(){
-    const els=this.getEls();const KEYS=['ohs','se','agn','a1g'];const cid=this.state.expanded;
+    const els=this.getEls();const KEYS=['ohs','se','agn','a1g','abc','hail','other'];const cid=this.state.expanded;
     const rects={};
     if(els.drill)rects.drill=els.drill.getBoundingClientRect();
     for(const k of KEYS)if(els['rail_'+k])rects['rail_'+k]=els['rail_'+k].getBoundingClientRect();
@@ -540,9 +682,23 @@ class Component extends DCLogic {
     ohs:{name:'Oncourse Home Solutions', accent:'#3D5EE0', bg:'#FFFFFF', ink:'#17233F', sub:'#6B7590', soft:'rgba(61,94,224,.10)', heatRGB:'61,94,224', dark:false},
     se: {name:'Service Experts', accent:'#C8102E', bg:'#FFFFFF', ink:'#1C1C1E', sub:'#6E747E', soft:'rgba(200,16,46,.08)', heatRGB:'200,16,46', dark:false},
     agn:{name:'Auto Glass Now', accent:'#2E7CC0', bg:'#FFFFFF', ink:'#12293E', sub:'#5E7288', soft:'rgba(46,124,192,.10)', heatRGB:'46,124,192', dark:false},
-    a1g:{name:'A1 Garage Door Service', accent:'#B92B27', bg:'#FDF9F0', ink:'#33231A', sub:'#8A7A6A', soft:'rgba(185,43,39,.10)', heatRGB:'185,43,39', dark:false}
+    a1g:{name:'A1 Garage Door Service', accent:'#B92B27', bg:'#FDF9F0', ink:'#33231A', sub:'#8A7A6A', soft:'rgba(185,43,39,.10)', heatRGB:'185,43,39', dark:false},
+    abc:{name:'ABC Plumbing', accent:'#1C4E9D', bg:'#FFFFFF', ink:'#12325F', sub:'#6B7E9B', soft:'rgba(28,78,157,.10)', heatRGB:'28,78,157', dark:false},
+    hail:{name:'Hail911', accent:'#D8232A', bg:'#FFFFFF', ink:'#1A1A1A', sub:'#7A7A7A', soft:'rgba(216,35,42,.10)', heatRGB:'216,35,42', dark:false},
+    other:{name:'All Other · HVAC · PL · ELEC', accent:'#17233F', bg:'#FFFFFF', ink:'#17233F', sub:'#6B7590', soft:'rgba(23,35,63,.08)', heatRGB:'23,35,63', dark:false},
+    floor:{name:'Floor Quality', accent:'#5A6472', bg:'#FFFFFF', ink:'#2E3646', sub:'#8A93A6', soft:'rgba(90,100,114,.10)', heatRGB:'90,100,114', dark:false}
   };
-  static STEPS = [{grid:1},{c:'ohs',t:'overview'},{c:'ohs',t:'reps'},{c:'se',t:'overview'},{c:'se',t:'camps'},{c:'agn',t:'overview'},{c:'agn',t:'heat'},{c:'a1g',t:'overview'},{c:'a1g',t:'reps'}];
+  // Every tab of every card gets its turn. Tabs a client does not have fall back
+  // to overview in expandTo, so listing them all is safe.
+  static STEPS = (function(){
+    const out=[{grid:1}];
+    const tabs=['overview','trend','reps','camps','heat','mix'];
+    ['ohs','se','agn','a1g','abc','hail','other'].forEach(function(c){
+      tabs.forEach(function(t){out.push({c:c,t:t});});
+      out.push({grid:1});
+    });
+    return out;
+  })();
   static RANGES = [['today','Today'],['yesterday','Yesterday'],['this_week','This week'],['last_week','Last week'],['this_month','This month'],['last_month','Last month'],['last_30','Last 30 days'],['last_90','Last 90 days']];
 
   // Manual feed: one CSV the user maintains + a static config file.
@@ -703,7 +859,12 @@ class Component extends DCLogic {
         this._anchor=new Date(this._anchorIso+'T00:00:00Z');
         this.setState({data:all});
       }).catch(e=>console.error('data load failed',e));
-    this._activity=()=>{this._lastAct=Date.now(); if(this.state.auto)this.setState({auto:false});};
+    // Clicking the toggle is itself activity, so ignore the event it generates.
+    this._activity=(e)=>{
+      this._lastAct=Date.now();
+      if(this._autoClick){this._autoClick=false;return;}
+      if(this.state.auto)this.setState({auto:false});
+    };
     ['pointerdown','wheel','keydown'].forEach(e=>window.addEventListener(e,this._activity,true));
     this._lastAct=Date.now();
     this._tick=setInterval(()=>this.idleTick(),1000);
@@ -727,7 +888,7 @@ class Component extends DCLogic {
     else this.setState({expanded:s.c,tab:s.t,branch:null,rep:null,exRange:this.state.ranges[s.c]});
   }
   expandTo(cid,o){
-    const els=this.getEls();const KEYS=['ohs','se','agn','a1g'];const rects={};
+    const els=this.getEls();const KEYS=['ohs','se','agn','a1g','abc','hail','other'];const rects={};
     for(const k of KEYS)if(els['panel_'+k])rects[k]=els['panel_'+k].getBoundingClientRect();
     const wasGrid=!this.state.expanded;
     this.setState({expanded:cid,tab:o.tab||'overview',branch:o.branch||null,rep:o.rep||null,exRange:this.state.ranges[cid]});
@@ -995,7 +1156,11 @@ class Component extends DCLogic {
   }
   railCards(){
     const d=this.state.data;if(!d)return[];
-    return ['ohs','se','agn','a1g'].map(cid=>{
+    // Every configured book of business, priority first, so the card you are
+    // viewing is always present and selectable from inside the drill-down.
+    const order=['ohs','se','agn','a1g','abc','hail','other'].filter(k=>d[k]);
+    for(const k in d)if(order.indexOf(k)<0)order.push(k);
+    return order.map(cid=>{
       const cfg=Component.CFG[cid];const a=this.agg(cid,this.state.exRange,this.state.segs[cid]||'',null,null);
       const act=this.state.expanded===cid;
       return {name:d[cid].name,leads:a.rows?(this.fmt(a.leads)+' leads'):'No data in range',go:()=>this.expandTo(cid,{}),
@@ -1053,11 +1218,19 @@ class Component extends DCLogic {
     if(hasHeat)tabs.push(['heat','HEATMAP']);
     if(isSE)tabs.push(['camps','BRANCHES']);
     else if(segList.length>1)tabs.push(['camps','CAMPAIGNS']);
+    tabs.push(['mix','APPT MIX']);
     const cur=tabs.some(t=>t[0]===this.state.tab)?this.state.tab:'overview';
     ex.tabs=tabs.map(([k,label])=>({label,go:()=>this.setState({tab:k}),
       bg:k===cur?cfg.accent:'transparent',ink:k===cur?(cfg.dark?'#0E1B2C':'#FFFFFF'):cfg.sub,
       bd:k===cur?cfg.accent:(cfg.dark?'rgba(255,255,255,.25)':'rgba(15,25,60,.18)')}));
     ex.tabOverview=cur==='overview';ex.tabReps=cur==='reps';ex.tabTrend=cur==='trend';ex.tabHeat=cur==='heat';ex.tabCamps=cur==='camps';
+    ex.tabMix=cur==='mix';
+    // Share of leads by call status, per campaign. Structure now, counts once the
+    // Appointment Report's status column is carried through ingestion.
+    ex.mixCols=['SALES','SERVICE','TUNE-UP','MEMBERSHIP','TRANSFER','OTHER'];
+    ex.mixRows=(segList.length?segList:[{id:'',name:'ALL'}]).map(function(s){
+      return {name:(s.name||'ALL'),cells:ex.mixCols.map(function(c){return {v:'—'};})};
+    });
     ex.campsLabelUpper=isSE?'BRANCH':'CAMPAIGN';
     const daily=[...a.daily.values()].sort((x,y)=>x.d<y.d?-1:1);
     const W=800,H=240,P=16;const lv=daily.map(v=>v.leads),cv=daily.map(v=>v.calls);
@@ -1137,6 +1310,37 @@ class Component extends DCLogic {
     const d=this.state.data;
     return {
       gridOn:!this.state.expanded, exOn:!!this.state.expanded, auto:this.state.auto,
+      // Rail cards are cosmetic for now: no source is mapped, so every value
+      // renders as a dash rather than a number nobody can trace.
+      autoLabel:this.state.auto?'ROTATING':'ROTATE OFF',
+      autoInk:this.state.auto?'#0E6B4F':'#8A93A6',
+      autoBg:this.state.auto?'rgba(14,107,79,.08)':'transparent',
+      autoBd:this.state.auto?'rgba(14,107,79,.3)':'rgba(15,25,60,.15)',
+      autoDot:this.state.auto?'#12A06F':'#C2C8D2',
+      toggleAuto:()=>{
+        // Turning it on starts the rotation immediately rather than waiting for
+        // the idle timer; turning it off must survive the idle check, so the
+        // activity clock is reset too.
+        const on=!this.state.auto;
+        this._lastAct=Date.now();this._autoClick=true;
+        if(on){this._step=0;this.setState({auto:true});this.applyStep(0);}
+        else this.setState({auto:false});
+      },
+      goAbc:()=>this.expandTo('abc',{}),
+      goHail:()=>this.expandTo('hail',{}),
+      goOther:()=>this.expandTo('other',{}),
+      goFloor:()=>this.expandTo('other',{}),
+      goMix:()=>this.expandTo('other',{tab:'mix'}),
+      hailResiInk:(this.state.hailSeg||'resi')==='resi'?'#FFFFFF':'#5A6472',
+      hailResiInkBg:(this.state.hailSeg||'resi')==='resi'?'#D8232A':'rgba(15,25,60,.05)',
+      hailCommInk:(this.state.hailSeg||'resi')==='comm'?'#FFFFFF':'#5A6472',
+      hailCommInkBg:(this.state.hailSeg||'resi')==='comm'?'#1A1A1A':'rgba(15,25,60,.05)',
+      hailResi:(this.state.hailSeg||'resi')==='resi',
+      hailComm:(this.state.hailSeg||'resi')==='comm',
+      setHailResi:()=>this.setState({hailSeg:'resi'}),
+      setHailComm:()=>this.setState({hailSeg:'comm'}),
+      mixRows:['Service / demand','Sales opp','Tune-up','Membership','Transfer']
+        .map((label,i)=>({label:label,key:'mix'+i})),
       collapse:()=>this.closeDrill(),
       drillRef:this.getRef('drill'),
       ohsPanelRef:this.getRef('panel_ohs'),sePanelRef:this.getRef('panel_se'),
