@@ -76,17 +76,17 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-01,SE,ACTIVE,"Stachura, David",97,60,,2026-08-15
 2026-08-01,SE,RENEW,"Stachura, David",230,50,,2026-08-15
 2026-08-01,SE,ACTIVE,"Stanley, Glenis",394,204,,2026-08-15
-2026-08-01,SE,ACTIVE,"Stella Self",37,19,,2026-08-15
-2026-08-01,A1G,STL,"Stephanie Beeman",1,0,,2026-08-15
-2026-08-01,SE,ACTIVE,"Stephanie Beeman",41,21,,2026-08-15
+2026-08-01,SE,ACTIVE,Stella Self,37,19,,2026-08-15
+2026-08-01,A1G,STL,Stephanie Beeman,1,0,,2026-08-15
+2026-08-01,SE,ACTIVE,Stephanie Beeman,41,21,,2026-08-15
 2026-08-01,A1G,PRIORITY,"Sweigert, Christopher",283,178,,2026-08-15
 2026-08-01,SE,ACTIVE,"Sweigert, Christopher",112,96,,2026-08-15
-2026-08-01,SE,ACTIVE,"Zach Mudlin",10,0,,2026-08-15
+2026-08-01,SE,ACTIVE,Zach Mudlin,10,0,,2026-08-15
 2026-08-01,A1G,STL,"Zehra, Shiza",,,11,
 2026-08-01,A1G,STL,"Zehra, Shiza",160,27,,2026-08-15
 2026-08-01,A1G,PRIORITY,"Zehra, Shiza",11,5,,2026-08-15
 2026-08-01,SE,ACTIVE,"Zehra, Shiza",17,12,,2026-08-15
-2026-08-03,A1G,PRIORITY,"(unattributed)",,,1,
+2026-08-03,A1G,PRIORITY,(unattributed),,,1,
 2026-08-03,A1G,PRIORITY,"Andre, Jonathan",,,4,
 2026-08-03,SE,ACTIVE,"Anglea, Makenna",,,7,
 2026-08-03,A1G,STL,"Anglea, Makenna",,,1,
@@ -129,7 +129,7 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-04,A1G,STL,"Sonnefeldt, Adam",,,2,
 2026-08-04,A1G,PRIORITY,"Stachura, David",,,1,
 2026-08-04,SE,ACTIVE,"Stanley, Glenis",,,4,
-2026-08-04,SE,ACTIVE,"Stephanie Beeman",,,1,
+2026-08-04,SE,ACTIVE,Stephanie Beeman,,,1,
 2026-08-04,SE,ACTIVE,"Sweigert, Christopher",,,4,
 2026-08-05,SE,ACTIVE,"Alvarado, Anjanette",,,8,
 2026-08-05,A1G,PRIORITY,"Andre, Jonathan",,,10,
@@ -309,7 +309,7 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-13,SE,ACTIVE,"Sadewater, Carmen",,,3,
 2026-08-13,A1G,PRIORITY,"Stachura, David",,,1,
 2026-08-13,SE,ACTIVE,"Stanley, Glenis",,,7,
-2026-08-13,SE,ACTIVE,"Stephanie Beeman",,,1,
+2026-08-13,SE,ACTIVE,Stephanie Beeman,,,1,
 2026-08-14,SE,ACTIVE,"Alvarado, Anjanette",,,5,
 2026-08-14,A1G,PRIORITY,"Andre, Jonathan",,,12,
 2026-08-14,SE,ACTIVE,"Anglea, Makenna",,,9,
@@ -343,7 +343,7 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-15,OHS,PROB ENROLL,"Hamilton, Gina",,,2,
 2026-08-15,SE,ACTIVE,"Hamilton, Gina",,,3,
 2026-08-15,SE,ACTIVE,"Pollard, Hunter",,,8,
-2026-08-15,SE,ACTIVE,"Stella Self",,,1,
+2026-08-15,SE,ACTIVE,Stella Self,,,1,
 2026-08-17,SE,ACTIVE,"Alvarado, Anjanette",63,34,4,
 2026-08-17,A1G,PRIORITY,"Alvarado, Anjanette",1,0,0,
 2026-08-17,A1G,STL,"Alvarado, Anjanette",0,0,0,
@@ -383,7 +383,7 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-17,SE,RENEW,"Stachura, David",69,17,6,
 2026-08-17,A1G,PRIORITY,"Stachura, David",1,0,0,
 2026-08-17,SE,ACTIVE,"Stanley, Glenis",98,51,5,
-2026-08-17,SE,ACTIVE,"Stella Self",2,2,1,
+2026-08-17,SE,ACTIVE,Stella Self,2,2,1,
 2026-08-18,SE,ACTIVE,"Alvarado, Anjanette",97,42,6,
 2026-08-18,A1G,PRIORITY,"Andre, Jonathan",249,158,8,
 2026-08-18,SE,ACTIVE,"Anglea, Makenna",99,76,7,
@@ -427,4 +427,37 @@ Date,Client,CampaignSegment,Rep,Calls,Contacts,Leads,DateEnd
 2026-08-18,A1G,PRIORITY,"Stachura, David",1,1,1,
 2026-08-18,SE,RENEW,"Stachura, David",10,4,1,
 2026-08-18,SE,ACTIVE,"Stanley, Glenis",56,30,3,
-2026-08-18,SE,ACTIVE,"Stephanie Beeman",18,14,0,
+2026-08-18,SE,ACTIVE,Stephanie Beeman,18,14,0,
+2026-08-24,A1G,PRIORITY,"Luschei, Braden",16,9,1,
+2026-08-24,A1G,STL,"Johnson, Michelle",72,4,3,
+2026-08-24,A1G,PRIORITY,"Byler, Zach",89,37,3,
+2026-08-24,A1G,PRIORITY,"Ayala, Jessica",62,28,2,
+2026-08-24,SE,ACTIVE,"Exantus, Jason",22,10,4,
+2026-08-24,SE,ACTIVE,"OConnor, Nicole",21,14,5,
+2026-08-24,OHS,FP5,"Myatt, Joseph",29,17,5,
+2026-08-24,SE,ACTIVE,"Alvarado, Anjanette",38,21,2,
+2026-08-24,SE,ACTIVE,"Lopez, Angira",18,10,2,
+2026-08-24,SE,ACTIVE,"Fulton, Alyssa",34,24,4,
+2026-08-24,SE,ACTIVE,"Armstrong, Kaleb",32,18,2,
+2026-08-24,SE,RENEW,"Stachura, David",7,4,2,
+2026-08-24,OHS,FP5,"Hamilton, Gina",12,9,4,
+2026-08-24,A1G,PRIORITY,"Halford, Scarlett",19,9,2,
+2026-08-24,A1G,PRIORITY,"Diaz, Adrian",15,7,1,
+2026-08-24,SE,ACTIVE,"Sadewater, Carmen",17,14,2,
+2026-08-24,SE,ACTIVE,"Luba, Tara",12,7,3,
+2026-08-24,A1G,STL,"Luba, Tara",2,0,,
+2026-08-24,A1G,PRIORITY,"Andre, Jonathan",52,25,,
+2026-08-24,A1G,PRIORITY,"Bravo-Perez, David",0,0,,
+2026-08-24,A1G,PRIORITY,"Cortez, Joe",45,32,,
+2026-08-24,A1G,PRIORITY,"Elliott, Grant",56,10,,
+2026-08-24,A1G,PRIORITY,"Evans, Amanda",39,20,,
+2026-08-24,A1G,PRIORITY,"Fulton, Ashley",28,12,,
+2026-08-24,A1G,PRIORITY,"Hamilton, Gina",3,1,,
+2026-08-24,A1G,PRIORITY,"Laughbaum, Rebekah",3,3,,
+2026-08-24,A1G,PRIORITY,"Luba, Tara",35,5,,
+2026-08-24,A1G,PRIORITY,"Marcus, Ryan",18,3,,
+2026-08-24,A1G,PRIORITY,"Sadewater, Carmen",14,2,,
+2026-08-24,A1G,PRIORITY,"Simpson, Andre",32,20,,
+2026-08-24,A1G,PRIORITY,"Stachura, David",1,0,,
+2026-08-24,SE,ACTIVE,"Coss, Grace",2,2,,
+2026-08-24,SE,ACTIVE,"Stachura, David",9,8,,
