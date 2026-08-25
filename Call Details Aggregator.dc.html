@@ -146,8 +146,16 @@ select{font-family:'Barlow',sans-serif}
         </div>
         <div style="display:flex;gap:11px;margin-top:20px;flex-wrap:wrap">
           <button onClick="{{ dlHourly }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD hourly.csv</button>
-  
+          <sc-if value="{{ hasAtt }}">
+            <button onClick="{{ dlAttempts }}" style="font:700 12px Barlow,sans-serif;letter-spacing:.1em;color:#17233F;background:#FFFFFF;border:none;border-radius:999px;padding:11px 20px">DOWNLOAD attempts.csv</button>
+          </sc-if>
         </div>
+        <sc-if value="{{ hasAtt }}">
+          <div style="font:600 12px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:12px;max-width:620px"><b style="color:#FFFFFF">attempts.csv</b> carries dials per dial pass, read from the Attempt column. Its Leads column is left blank on purpose — leads per pass come from the nightly run, which uses DialedIn's own status list rather than the disposition rules set on this page.</div>
+        </sc-if>
+        <sc-if value="{{ noAtt }}">
+          <div style="font:600 12px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:12px;max-width:620px">No <b style="color:#FFFFFF">Attempt</b> column in this export, so there is no dial-pass breakdown to download.</div>
+        </sc-if>
         <div style="font:600 12.5px/1.6 Barlow,sans-serif;color:#9BA6BC;margin-top:16px;max-width:660px">
           <b style="color:#FFFFFF">hourly.csv</b> → put in <b style="color:#FFFFFF">data/</b>, replacing the existing file. Feeds the heatmap.<br>
           This page produces <b style="color:#FFFFFF">no daily figures</b>. Leads, calls and contacts per day come
@@ -249,13 +257,14 @@ class Component extends DCLogic {
 
   async run(file){
     this.setState({stage:'parsing',progress:0,rowsRead:0,fileName:file.name,error:''});
-    const cube=new Map(),camps=new Map(),stats=new Map();
-    let hdr=null,iDate=-1,iCamp=-1,iStat=-1,rows=0,bad=0,minD='9999-99-99',maxD='0000-00-00';
+    const cube=new Map(),camps=new Map(),stats=new Map(),attCube=new Map();
+    let hdr=null,iDate=-1,iCamp=-1,iStat=-1,iAtt=-1,rows=0,bad=0,minD='9999-99-99',maxD='0000-00-00';
     const HS=this.hourStart(),HE=this.hourEnd();
     const onRow=cells=>{
       if(!hdr){
         hdr=cells.map(s=>s.trim().replace(/^"|"$/g,''));
         iDate=hdr.indexOf('Date');iCamp=hdr.indexOf('Campaign');iStat=hdr.indexOf('Call Status');
+        iAtt=hdr.indexOf('Attempt');
         if(iDate<0||iCamp<0||iStat<0)throw new Error('Expected columns Date, Campaign and Call Status — found: '+hdr.slice(0,8).join(', '));
         return;
       }
@@ -272,6 +281,14 @@ class Component extends DCLogic {
       const stat=(cells[iStat]||'').trim()||'(blank)';
       const k=d+'\u0001'+camp+'\u0001'+stat+'\u0001'+hb;
       cube.set(k,(cube.get(k)||0)+1);
+      // Dial pass, counted separately so the hourly cube keeps its cardinality.
+      if(iAtt>=0){
+        const n=parseInt(String(cells[iAtt]||'').replace(/[^0-9]/g,''),10);
+        if(n>0){
+          const ak=d+'\u0001'+camp+'\u0001'+Math.min(n,10);
+          attCube.set(ak,(attCube.get(ak)||0)+1);
+        }
+      }
       camps.set(camp,(camps.get(camp)||0)+1);
       stats.set(stat,(stats.get(stat)||0)+1);
     };
@@ -313,7 +330,8 @@ class Component extends DCLogic {
         return {name,calls};});
       const statuses=[...stats.entries()].sort((a,b)=>b[1]-a[1]).map(([name,calls])=>({name,calls}));
       const active=Component.CLIENTS.find(c=>present.has(c))||'';
-      this._cube=cube;this._range=[minD,maxD];this._bad=bad;this._rows=rows;
+      this._cube=cube;this._attCube=attCube;this._range=[minD,maxD];this._bad=bad;this._rows=rows;
+      this._hasAtt=attCube.size>0;
       this.setState({stage:'ready',progress:100,rowsRead:rows,campaigns,statuses,map,
         contact:{},lead:{},activeClient:active});
     }catch(err){
@@ -357,6 +375,31 @@ class Component extends DCLogic {
       out.push([r.d,r.client,r.seg,'leads'].concat(r.hLeads).join(','));
     }
     return out.join('\n')+'\n';
+  }
+  /* Dials per pass, for backfilling days the nightly run never saw.
+     Leads is deliberately left BLANK: this page infers leads from disposition
+     rules set by hand, while the nightly script uses DialedIn's own 134-status
+     allow-list. Publishing an inferred lead count in a column the dashboard
+     reads as counted is the exact mistake that produced bad conversions before.
+     Blank reads as "not ingested" and the lead columns show dashes. */
+  attemptsCsv(){
+    const {map}=this.state;
+    const out=new Map();
+    for(const [k,n] of (this._attCube||new Map())){
+      const [d,camp,att]=k.split('\u0001');
+      const m=map[camp];
+      if(!m||!m.client||!m.seg)continue;
+      const key=d+'|'+m.client+'|'+m.seg+'|'+att;
+      out.set(key,(out.get(key)||0)+n);
+    }
+    const rows=[...out.entries()].map(([k,n])=>{
+      const [d,client,seg,att]=k.split('|');
+      return {d,client,seg,att:+att,n};
+    }).sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:(x.client<y.client?-1:x.client>y.client?1:
+      (x.seg<y.seg?-1:x.seg>y.seg?1:x.att-y.att)));
+    const lines=['Date,Client,CampaignSegment,Attempt,Calls,Leads'];
+    for(const r of rows)lines.push([r.d,r.client,r.seg,r.att,r.n,''].join(','));
+    return lines.join('\n')+'\n';
   }
   dailyCsv(){
     const {rows}=this.build();
@@ -459,6 +502,8 @@ class Component extends DCLogic {
     v.outCalls=this.fmt(b.calls);v.outContacts=this.fmt(b.contacts);v.outLeads=this.fmt(b.leads);
     v.outRows=this.fmt(b.rows.length);v.outSkipped=this.fmt(b.skipped);v.hasSkipped=b.skipped>0;
     v.dlHourly=()=>this.download('hourly.csv',this.hourlyCsv());
+    v.dlAttempts=()=>this.download('attempts.csv',this.attemptsCsv());
+    v.hasAtt=!!this._hasAtt;v.noAtt=!this._hasAtt;
     // No daily export. Daily numbers come from Campaign Summary, which counts them; this page only
     // ever inferred them from dispositions, and an inferred number that looks like a counted one is a trap.
     v.preview=this.hourlyCsv().split('\n').slice(0,7).map(l=>l.slice(0,110)).join('\n')||'—';

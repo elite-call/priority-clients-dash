@@ -456,21 +456,52 @@ select{font-family:'Barlow',sans-serif}
             <div style="flex:2.2;min-width:0;background:{{ ex.card }};border-radius:12px;padding:14px 16px;display:flex;flex-direction:column">
               <div style="display:flex;gap:16px;align-items:baseline">
                 <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">LEADS TREND</div>
-                <div style="font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }}">— leads (peak {{ ex.maxLeads }}) · - - calls (peak {{ ex.maxCalls }})</div>
               </div>
+                <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;font:600 10.5px Barlow,sans-serif;color:{{ ex.sub }}">
+                  <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2.5px;background:{{ ex.accent }};border-radius:2px"></span>LEADS · left</span>
+                  <sc-if value="{{ ex.hasConv }}"><span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px dashed {{ ex.sub }}"></span>CONV % · right</span></sc-if>
+                  <sc-if value="{{ ex.noConvLine }}"><span style="opacity:.75">No contact data in this range</span></sc-if>
+                </div>
               <sc-if value="{{ ex.noTrend }}">
                 <div style="flex:1;display:flex;align-items:center;justify-content:center;font:600 13px Barlow,sans-serif;color:{{ ex.sub }};text-align:center">{{ ex.trendNote }}</div>
               </sc-if>
               <sc-if value="{{ ex.hasTrend }}" hint-placeholder-val="{{ true }}">
-              <svg viewBox="0 0 800 240" preserveAspectRatio="none" style="flex:1;width:100%;min-height:0;margin-top:8px">
-                <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .8s ease .4s both"></path>
-                <polyline points="{{ ex.callsPts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.6;stroke-dasharray:6 5;opacity:.7;animation:ecCallsIn .5s ease .95s both"></polyline>
-                <polyline pathLength="1" points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:3;stroke-dasharray:1;animation:ecDraw .9s cubic-bezier(.4,0,.2,1) .15s both"></polyline>
-                <sc-for list="{{ ex.dots }}" as="dt" hint-placeholder-count="0">
-                  <path d="{{ dt.d }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:8;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecDotIn .35s cubic-bezier(.34,1.56,.64,1) {{ dt.delay }} both"></path>
+              <div style="position:relative;flex:1;min-height:150px;margin-top:10px" onMouseMove="{{ ex.onChartMove }}" onMouseLeave="{{ ex.onChartLeave }}">
+                <svg viewBox="0 0 800 260" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+                  <sc-for list="{{ ex.grid }}" as="g" hint-placeholder-count="5">
+                    <path d="{{ g.d }}" style="fill:none;stroke:{{ ex.line }};stroke-width:1;vector-effect:non-scaling-stroke"></path>
+                  </sc-for>
+                  <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .7s ease .3s both"></path>
+                  <sc-for list="{{ ex.convSegs }}" as="cs" hint-placeholder-count="0">
+                    <polyline points="{{ cs.pts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.75;stroke-dasharray:5 4;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85;animation:ecCallsIn .5s ease .85s both"></polyline>
+                  </sc-for>
+                  <polyline points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecFade .5s ease .1s both"></polyline>
+                  <sc-if value="{{ ex.hasHover }}">
+                    <path d="M{{ ex.hoverX }},14 V232" style="fill:none;stroke:{{ ex.ink }};stroke-width:1;stroke-dasharray:3 3;opacity:.35;vector-effect:non-scaling-stroke"></path>
+                  </sc-if>
+                </svg>
+                <sc-for list="{{ ex.yLeft }}" as="yt" hint-placeholder-count="5">
+                  <div style="position:absolute;left:0;top:{{ yt.top }};transform:translateY(-50%);width:40px;text-align:right;font:600 10.5px Barlow,sans-serif;color:{{ ex.sub }};pointer-events:none">{{ yt.label }}</div>
                 </sc-for>
-              </svg>
-              <div style="display:flex;justify-content:space-between;font:600 11.5px Barlow,sans-serif;color:{{ ex.sub }};margin-top:6px"><span>{{ ex.x0 }}</span><span>{{ ex.x1 }}</span></div>
+                <sc-for list="{{ ex.yRight }}" as="yr" hint-placeholder-count="0">
+                  <div style="position:absolute;right:0;top:{{ yr.top }};transform:translateY(-50%);width:44px;font:600 10.5px Barlow,sans-serif;color:{{ ex.sub }};opacity:.8;pointer-events:none">{{ yr.label }}</div>
+                </sc-for>
+                <sc-if value="{{ ex.hasHover }}">
+                  <div style="position:absolute;left:{{ ex.hoverLeadLeft }};top:{{ ex.hoverLeadTop }};width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:{{ ex.accent }};box-shadow:0 0 0 2px {{ ex.chartBg }};pointer-events:none"></div>
+                  <sc-if value="{{ ex.hoverHasConv }}">
+                    <div style="position:absolute;left:{{ ex.hoverLeadLeft }};top:{{ ex.hoverConvTop }};width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:{{ ex.sub }};box-shadow:0 0 0 2px {{ ex.chartBg }};pointer-events:none"></div>
+                  </sc-if>
+                  <div style="position:absolute;left:{{ ex.tipLeft }};top:6px;transform:{{ ex.tipSide }};background:{{ ex.tipBg }};border-radius:8px;padding:8px 11px;pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,.22);white-space:nowrap;z-index:2">
+                    <div style="font:700 10px Barlow,sans-serif;letter-spacing:.12em;color:{{ ex.tipInk }};opacity:.65">{{ ex.tipDate }}</div>
+                    <div style="display:flex;gap:14px;margin-top:5px">
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }}">{{ ex.tipLeads }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">LEADS</div></div>
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }}">{{ ex.tipConv }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">CONV</div></div>
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }};opacity:.75">{{ ex.tipContacts }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">CONTACTS</div></div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:600 11px Barlow,sans-serif;color:{{ ex.sub }};margin-top:4px;padding:0 48px 0 48px"><span>{{ ex.x0 }}</span><span>{{ ex.xMid }}</span><span>{{ ex.x1 }}</span></div>
               </sc-if>
             </div>
             <div style="flex:1;min-width:230px;display:flex;flex-direction:column;gap:12px;overflow:auto">
@@ -534,24 +565,115 @@ select{font-family:'Barlow',sans-serif}
 
         <sc-if value="{{ ex.tabTrend }}">
         <div style="flex:1;min-height:0;display:flex;flex-direction:column;animation:ecFade .25s ease">
-          <div style="display:flex;gap:18px;font:600 12.5px Barlow,sans-serif;color:{{ ex.sub }};padding-bottom:6px">
-            <span><b style="color:{{ ex.accent }}">—</b> Leads (peak {{ ex.maxLeads }})</span>
-            <span><b>- -</b> Calls (peak {{ ex.maxCalls }})</span>
-            <span style="flex:1"></span><span>{{ ex.rangeLabel }}</span>
+          <div style="display:flex;gap:18px;align-items:baseline;padding-bottom:2px">
+                <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;font:600 12px Barlow,sans-serif;color:{{ ex.sub }}">
+                  <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2.5px;background:{{ ex.accent }};border-radius:2px"></span>LEADS · left</span>
+                  <sc-if value="{{ ex.hasConv }}"><span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px dashed {{ ex.sub }}"></span>CONV % · right</span></sc-if>
+                  <sc-if value="{{ ex.noConvLine }}"><span style="opacity:.75">No contact data in this range</span></sc-if>
+                </div>
+            <span style="flex:1"></span>
+            <span style="font:600 12px Barlow,sans-serif;color:{{ ex.sub }}">peak {{ ex.peakLeads }} leads · peak {{ ex.peakConv }}</span>
+            <span style="font:600 12px Barlow,sans-serif;color:{{ ex.sub }}">{{ ex.rangeLabel }}</span>
           </div>
           <sc-if value="{{ ex.noTrend }}">
             <div style="flex:1;display:flex;align-items:center;justify-content:center;font:600 14px Barlow,sans-serif;color:{{ ex.sub }}">{{ ex.trendNote }}</div>
           </sc-if>
           <sc-if value="{{ ex.hasTrend }}" hint-placeholder-val="{{ true }}">
-          <svg viewBox="0 0 800 240" preserveAspectRatio="none" style="flex:1;width:100%;min-height:0">
-            <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .8s ease .4s both"></path>
-            <polyline points="{{ ex.callsPts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.6;stroke-dasharray:6 5;opacity:.7;animation:ecCallsIn .5s ease .95s both"></polyline>
-            <polyline pathLength="1" points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:3;stroke-dasharray:1;animation:ecDraw .9s cubic-bezier(.4,0,.2,1) .15s both"></polyline>
-            <sc-for list="{{ ex.dots }}" as="dt" hint-placeholder-count="0">
-              <path d="{{ dt.d }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:8;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecDotIn .35s cubic-bezier(.34,1.56,.64,1) {{ dt.delay }} both"></path>
-            </sc-for>
-          </svg>
-          <div style="display:flex;justify-content:space-between;font:600 12px Barlow,sans-serif;color:{{ ex.sub }};padding-top:6px"><span>{{ ex.x0 }}</span><span>{{ ex.x1 }}</span></div>
+              <div style="position:relative;flex:1;min-height:0;margin-top:10px" onMouseMove="{{ ex.onChartMove }}" onMouseLeave="{{ ex.onChartLeave }}">
+                <svg viewBox="0 0 800 260" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+                  <sc-for list="{{ ex.grid }}" as="g" hint-placeholder-count="5">
+                    <path d="{{ g.d }}" style="fill:none;stroke:{{ ex.line }};stroke-width:1;vector-effect:non-scaling-stroke"></path>
+                  </sc-for>
+                  <path d="{{ ex.areaPath }}" style="fill:{{ ex.soft }};animation:ecAreaIn .7s ease .3s both"></path>
+                  <sc-for list="{{ ex.convSegs }}" as="cs" hint-placeholder-count="0">
+                    <polyline points="{{ cs.pts }}" style="fill:none;stroke:{{ ex.sub }};stroke-width:1.75;stroke-dasharray:5 4;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.85;animation:ecCallsIn .5s ease .85s both"></polyline>
+                  </sc-for>
+                  <polyline points="{{ ex.leadsPts }}" style="fill:none;stroke:{{ ex.accent }};stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:ecFade .5s ease .1s both"></polyline>
+                  <sc-if value="{{ ex.hasHover }}">
+                    <path d="M{{ ex.hoverX }},14 V232" style="fill:none;stroke:{{ ex.ink }};stroke-width:1;stroke-dasharray:3 3;opacity:.35;vector-effect:non-scaling-stroke"></path>
+                  </sc-if>
+                </svg>
+                <sc-for list="{{ ex.yLeft }}" as="yt" hint-placeholder-count="5">
+                  <div style="position:absolute;left:0;top:{{ yt.top }};transform:translateY(-50%);width:40px;text-align:right;font:600 10.5px Barlow,sans-serif;color:{{ ex.sub }};pointer-events:none">{{ yt.label }}</div>
+                </sc-for>
+                <sc-for list="{{ ex.yRight }}" as="yr" hint-placeholder-count="0">
+                  <div style="position:absolute;right:0;top:{{ yr.top }};transform:translateY(-50%);width:44px;font:600 10.5px Barlow,sans-serif;color:{{ ex.sub }};opacity:.8;pointer-events:none">{{ yr.label }}</div>
+                </sc-for>
+                <sc-if value="{{ ex.hasHover }}">
+                  <div style="position:absolute;left:{{ ex.hoverLeadLeft }};top:{{ ex.hoverLeadTop }};width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:{{ ex.accent }};box-shadow:0 0 0 2px {{ ex.chartBg }};pointer-events:none"></div>
+                  <sc-if value="{{ ex.hoverHasConv }}">
+                    <div style="position:absolute;left:{{ ex.hoverLeadLeft }};top:{{ ex.hoverConvTop }};width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:{{ ex.sub }};box-shadow:0 0 0 2px {{ ex.chartBg }};pointer-events:none"></div>
+                  </sc-if>
+                  <div style="position:absolute;left:{{ ex.tipLeft }};top:6px;transform:{{ ex.tipSide }};background:{{ ex.tipBg }};border-radius:8px;padding:8px 11px;pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,.22);white-space:nowrap;z-index:2">
+                    <div style="font:700 10px Barlow,sans-serif;letter-spacing:.12em;color:{{ ex.tipInk }};opacity:.65">{{ ex.tipDate }}</div>
+                    <div style="display:flex;gap:14px;margin-top:5px">
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }}">{{ ex.tipLeads }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">LEADS</div></div>
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }}">{{ ex.tipConv }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">CONV</div></div>
+                      <div><div style="font:800 16px/1 Barlow,sans-serif;color:{{ ex.tipInk }};opacity:.75">{{ ex.tipContacts }}</div><div style="font:700 8.5px Barlow,sans-serif;letter-spacing:.1em;color:{{ ex.tipInk }};opacity:.6;margin-top:2px">CONTACTS</div></div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:600 11px Barlow,sans-serif;color:{{ ex.sub }};margin-top:4px;padding:0 48px 0 48px"><span>{{ ex.x0 }}</span><span>{{ ex.xMid }}</span><span>{{ ex.x1 }}</span></div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ ex.tabAtt }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;animation:ecFade .25s ease;overflow:auto">
+          <sc-if value="{{ ex.noAtt }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font:600 13.5px/1.6 Barlow,sans-serif;color:{{ ex.sub }};max-width:420px;margin:0 auto">Awaiting attempts data for this range.<br>The nightly Call Details phase writes it to attempts.csv.</div>
+          </sc-if>
+          <sc-if value="{{ ex.hasAtt }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:26px;flex-wrap:wrap;background:{{ ex.card }};border-radius:12px;padding:14px 18px">
+            <div><div style="font:800 30px/1 Barlow,sans-serif">{{ ex.attRecords }}</div><div style="margin-top:4px;font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">RECORDS TOUCHED</div></div>
+            <div><div style="font:800 30px/1 Barlow,sans-serif">{{ ex.attAvg }}</div><div style="margin-top:4px;font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">AVG ATTEMPTS PER RECORD</div></div>
+            <div><div style="font:800 30px/1 Barlow,sans-serif">{{ ex.attCalls }}</div><div style="margin-top:4px;font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">DIALS PLACED</div></div>
+            <div><div style="font:800 30px/1 Barlow,sans-serif">{{ ex.attConv }}</div><div style="margin-top:4px;font:700 10px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">CONV · LEADS/RECORDS</div></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
+            <div style="flex:1.15;min-width:320px;background:{{ ex.card }};border-radius:12px;padding:14px 16px">
+              <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">BY DIAL PASS</div>
+              <div style="display:grid;grid-template-columns:64px 1fr 62px 52px 62px;gap:8px;margin-top:12px;font:700 9.5px Barlow,sans-serif;letter-spacing:.11em;color:{{ ex.sub }}">
+                <div>PASS</div><div>DIALS</div><div style="text-align:right">LEADS</div><div style="text-align:right">CONV</div><div style="text-align:right">OF LEADS</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">
+                <sc-for list="{{ ex.attRows }}" as="ar" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:64px 1fr 62px 52px 62px;gap:8px;align-items:center">
+                    <div style="font:700 11px Barlow,sans-serif;letter-spacing:.06em;color:{{ ex.sub }}">{{ ar.label }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <div style="flex:1;height:7px;border-radius:999px;background:{{ ex.line }};min-width:0"><div style="height:100%;width:{{ ar.barW }};background:{{ ex.accent }};border-radius:999px;opacity:.55"></div></div>
+                      <div style="font:700 11.5px Barlow,sans-serif;width:48px;text-align:right">{{ ar.calls }}</div>
+                    </div>
+                    <div style="font:800 13px Barlow,sans-serif;text-align:right;color:{{ ex.accent }}">{{ ar.leads }}</div>
+                    <div style="font:600 11px Barlow,sans-serif;text-align:right;color:{{ ex.sub }}">{{ ar.conv }}</div>
+                    <div style="font:600 11px Barlow,sans-serif;text-align:right;color:{{ ex.sub }}">{{ ar.leadShare }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font:600 11px/1.5 Barlow,sans-serif;color:{{ ex.sub }};margin-top:12px">{{ ex.attNote }}</div>
+            </div>
+            <sc-if value="{{ ex.hasAttSegs }}">
+            <div style="flex:1;min-width:300px;background:{{ ex.card }};border-radius:12px;padding:14px 16px">
+              <div style="font:700 11px Barlow,sans-serif;letter-spacing:.13em;color:{{ ex.sub }}">BY CAMPAIGN</div>
+              <div style="display:grid;grid-template-columns:1.5fr 58px 46px 56px 52px;gap:8px;margin-top:12px;font:700 9.5px Barlow,sans-serif;letter-spacing:.11em;color:{{ ex.sub }}">
+                <div>CAMPAIGN</div><div style="text-align:right">RECORDS</div><div style="text-align:right">AVG</div><div style="text-align:right">LEADS</div><div style="text-align:right">CONV</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:8px">
+                <sc-for list="{{ ex.attSegRows }}" as="sr" hint-placeholder-count="2">
+                  <div style="display:grid;grid-template-columns:1.5fr 58px 46px 56px 52px;gap:8px;align-items:baseline">
+                    <div style="font:700 11.5px Barlow,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sr.name }}</div>
+                    <div style="font:600 11.5px Barlow,sans-serif;text-align:right">{{ sr.records }}</div>
+                    <div style="font:600 11.5px Barlow,sans-serif;text-align:right;color:{{ ex.sub }}">{{ sr.avg }}</div>
+                    <div style="font:800 13px Barlow,sans-serif;text-align:right;color:{{ ex.accent }}">{{ sr.leads }}</div>
+                    <div style="font:600 11.5px Barlow,sans-serif;text-align:right">{{ sr.conv }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font:600 11px/1.5 Barlow,sans-serif;color:{{ ex.sub }};margin-top:12px">AVG is dials per record. A campaign well above the others is spending its passes without converting them.</div>
+            </div>
+            </sc-if>
+          </div>
           </sc-if>
         </div>
         </sc-if>
@@ -784,6 +906,22 @@ class Component extends DCLogic {
     }
   }
   // Branch leads come from the Appointment Report; display only, no rep attribution behind them.
+  /* Dial passes from Call Details column H. Attempt 10 is "10 or more".
+     Calls at attempt 1 equals the number of records touched, which is what
+     makes attempts-per-record and 3-pass conversion counted rather than
+     estimated — no distribution is assumed anywhere. */
+  buildAttempts(all,csv){
+    if(!csv)return;
+    for(const r of this.parseCsv(csv)){
+      const f=all[(r.Client||'').trim().toLowerCase()];if(!f)continue;
+      const d=this.toIso(r.Date);if(!d)continue;
+      const n=parseInt(r.Attempt,10);if(!(n>0))continue;
+      f.attRows=f.attRows||[];
+      const lv=(r.Leads==null?'':String(r.Leads)).trim();
+      f.attRows.push({d,seg:this.segId(f,r.CampaignSegment),n:Math.min(n,10),
+        calls:+r.Calls||0,leads:(lv===''||isNaN(+lv))?null:+lv});
+    }
+  }
   buildBranches(all,csv){
     if(!csv)return;
     for(const r of this.parseCsv(csv)){
@@ -866,8 +1004,9 @@ class Component extends DCLogic {
       fetch('data/all_clients_daily.csv').then(r=>r.text()),
       fetch('data/hourly.csv').then(r=>r.ok?r.text():'').catch(()=>''),
       fetch('data/reps.csv').then(r=>r.ok?r.text():'').catch(()=>''),
-      fetch('data/branches.csv').then(r=>r.ok?r.text():'').catch(()=>'')])
-      .then(([cfg,csv,hourly,reps,branches])=>{
+      fetch('data/branches.csv').then(r=>r.ok?r.text():'').catch(()=>''),
+      fetch('data/attempts.csv').then(r=>r.ok?r.text():'').catch(()=>'')])
+      .then(([cfg,csv,hourly,reps,branches,attempts])=>{
         // The committed CSVs are the base for every bucket, and a local ingest
         // overlays them per row. Suppressing a whole bucket because the cache
         // held anything meant one stale hand-ingest hid every nightly commit
@@ -877,6 +1016,7 @@ class Component extends DCLogic {
         this.buildHourly(all,hourly);
         this.buildReps(all,reps);
         this.buildBranches(all,branches);
+        this.buildAttempts(all,attempts);
         if(cache)this.applyCache(all,cache);
         // "from your last ingest" only when the cache is genuinely ahead of the
         // published data, so the label never claims credit for a nightly run.
@@ -968,7 +1108,20 @@ class Component extends DCLogic {
     const f=this.state.data[cid];const [s,e]=this.bounds(rangeKey);
     const out={calls:0,contacts:0,leads:0,denom:0,contactsCamp:0,listBySeg:new Map(),
       stlW:0,stlC:0,hoursSum:null,opps:null,daily:new Map(),segs:new Map(),reps:new Map(),branches:new Map(),
-      heat:Array.from({length:7},()=>new Array(14).fill(0)),skippedDays:new Set(),repFilter:false,rows:0};
+      heat:Array.from({length:7},()=>new Array(14).fill(0)),skippedDays:new Set(),repFilter:false,rows:0,
+      att:new Map(),attSeg:new Map()};
+    for(const r of f.attRows||[]){
+      if(r.d<s||r.d>e)continue;
+      let m=out.attSeg.get(r.seg);
+      if(!m){m=new Map();out.attSeg.set(r.seg,m);}
+      let y=m.get(r.n);
+      if(!y){y={calls:0,leads:null};m.set(r.n,y);}
+      y.calls+=r.calls;if(r.leads!=null)y.leads=(y.leads||0)+r.leads;
+      if(seg&&r.seg!==seg)continue;
+      let x=out.att.get(r.n);
+      if(!x){x={calls:0,leads:null};out.att.set(r.n,x);}
+      x.calls+=r.calls;if(r.leads!=null)x.leads=(x.leads||0)+r.leads;
+    }
     for(const r of f.daily||[]){
       if(r.d<s||r.d>e)continue;
       if(seg&&r.seg!==seg){if(!r.seg)out.skippedDays.add(r.d);continue;}
@@ -1113,6 +1266,116 @@ class Component extends DCLogic {
     if(s<=t)return cfg.dark?'#5FD68B':'#1B9E55';
     if(s<=t*1.4)return cfg.dark?'#F2B75B':'#D98A1F';
     return cfg.dark?'#FF837A':'#C8352E';}
+  /* Round tick steps, so the axis reads 0/5/10/15/20 rather than 0/3.75/7.5.
+     The top of the scale is step*ticks, NOT max rounded up to a multiple of
+     step: that guarantees exactly `ticks` intervals, which is what lets the
+     tick loop walk the step and still land on the top of the axis. It also
+     keeps both axes on an identical interval count, so the right-hand labels
+     stay aligned to gridlines that are drawn from the left scale alone.
+     intOnly forces a whole-number step for counts, since 0/0.25/0.5 rounds to
+     duplicate labels like "0 0 1 1 1" on a low-volume client. */
+  niceScale(max,ticks,intOnly){
+    if(!(max>0))return{max:ticks,step:1};
+    const raw=max/ticks,mag=Math.pow(10,Math.floor(Math.log10(raw))),n=raw/mag;
+    let step=(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+    if(intOnly)step=Math.max(1,Math.ceil(step));
+    return{max:step*ticks,step};
+  }
+  /* Two series on one plot, each with its OWN labelled axis: raw leads on the
+     left, leads/contacts on the right. The previous chart normalised both
+     series to their own peak and printed neither scale, so the lines crossing
+     meant nothing. Stating both axes is what makes the shapes comparable. */
+  buildChart(daily,cfg){
+    const o={},n=daily.length;
+    o.hasTrend=n>1;o.noTrend=n<2;
+    if(n<2){
+      o.trendNote=n===1?('Only one day of data in this range · '+this.fmtDate(daily[0].d)):'No data in this range';
+      return o;
+    }
+    const W=800,H=260,L=48,R=52,T=14,B=28;
+    const leads=daily.map(v=>v.leads||0);
+    const conv=daily.map(v=>v.contacts?(v.leads/v.contacts*100):null);
+    const hasConv=conv.some(v=>v!=null);
+    const sL=this.niceScale(Math.max(...leads,0),4,true);
+    const sC=this.niceScale(Math.max(...conv.filter(v=>v!=null),0),4);
+    // Let each label carry only the precision its own value needs, so a 0.5
+    // step reads "0.5%" and a 5 step reads "5%" without a decimals rule per case.
+    const cLbl=v=>(+v.toFixed(2))+'%';
+    const x=i=>L+(n===1?0:i*(W-L-R)/(n-1));
+    const yL=v=>H-B-(v/sL.max)*(H-T-B);
+    const yC=v=>H-B-(v/sC.max)*(H-T-B);
+
+    o.leadsPts=leads.map((v,i)=>x(i).toFixed(1)+','+yL(v).toFixed(1)).join(' ');
+    o.areaPath='M'+x(0).toFixed(1)+','+(H-B)+' L'+o.leadsPts.split(' ').join(' L')+
+      ' L'+x(n-1).toFixed(1)+','+(H-B)+' Z';
+
+    // A day with no contacts has no rate at all; break the line rather than
+    // drawing through a gap as if the rate were zero.
+    o.convSegs=[];
+    if(hasConv){
+      let run=[];
+      conv.forEach((v,i)=>{
+        if(v==null){if(run.length>1)o.convSegs.push({pts:run.join(' ')});run=[];return;}
+        run.push(x(i).toFixed(1)+','+yC(v).toFixed(1));
+      });
+      if(run.length>1)o.convSegs.push({pts:run.join(' ')});
+    }
+    o.hasConv=hasConv;o.noConvLine=!hasConv;
+
+    o.grid=[];o.yLeft=[];o.yRight=[];
+    for(let t=0;t<=4;t++){
+      const v=sL.step*t,yy=yL(v);
+      o.grid.push({d:'M'+L+','+yy.toFixed(1)+' H'+(W-R)});
+      o.yLeft.push({label:this.fmt(v),top:((yy/H)*100).toFixed(2)+'%'});
+      if(hasConv){
+        const cv=sC.step*t;
+        o.yRight.push({label:cLbl(cv),top:((yC(cv)/H)*100).toFixed(2)+'%'});
+      }
+    }
+    // No permanent markers: an <svg> stretched with preserveAspectRatio="none"
+    // squashes a circle into an oval (r=2.5 measured 2.2 x 2.9). Hover markers
+    // are HTML instead, which the stretch cannot reach.
+    const pctX=v=>((v/W)*100).toFixed(3)+'%',pctY=v=>((v/H)*100).toFixed(3)+'%';
+
+    // Hover state, resolved here so the template stays declarative.
+    const hi=this.state.hoverI;
+    const j=(hi!=null&&hi>=0&&hi<n)?hi:null;
+    o.hasHover=j!=null;
+    if(j!=null){
+      o.hoverX=x(j).toFixed(1);
+      o.hoverLeadLeft=pctX(x(j));o.hoverLeadTop=pctY(yL(leads[j]));
+      o.hoverHasConv=conv[j]!=null;
+      o.hoverConvTop=conv[j]==null?'0%':pctY(yC(conv[j]));
+      o.tipLeft=((x(j)/W)*100).toFixed(2)+'%';
+      o.tipSide=(x(j)>W*0.62)?'translateX(-100%) translateX(-10px)':'translateX(10px)';
+      o.tipDate=this.fmtDate(daily[j].d);
+      o.tipLeads=this.fmt(leads[j]);
+      o.tipCalls=this.fmt(daily[j].calls||0);
+      o.tipContacts=daily[j].contacts?this.fmt(daily[j].contacts):'—';
+      o.tipConv=conv[j]==null?'—':conv[j].toFixed(1)+'%';
+      // ex.card is a low-alpha surface tint, not a solid — using it as tooltip
+      // text put rgba(15,25,60,.043) on a dark panel, i.e. invisible.
+      // Halo behind the hover markers: a solid, since the panel's own surface
+      // colour is a low-alpha tint and would let the line show through.
+      o.chartBg=cfg.dark?'#12203A':'#FFFFFF';
+      o.tipBg=cfg.dark?'#F4F6FA':'#17233F';
+      o.tipInk=cfg.dark?'#17233F':'#FFFFFF';
+    }
+    o.onChartMove=e=>{
+      const r=e.currentTarget.getBoundingClientRect();
+      if(!r.width)return;
+      const px=(e.clientX-r.left)/r.width*W;
+      let best=0,bd=Infinity;
+      for(let i=0;i<n;i++){const d=Math.abs(x(i)-px);if(d<bd){bd=d;best=i;}}
+      if(this.state.hoverI!==best)this.setState({hoverI:best});
+    };
+    o.onChartLeave=()=>{if(this.state.hoverI!=null)this.setState({hoverI:null});};
+    o.x0=this.fmtDate(daily[0].d);o.x1=this.fmtDate(daily[n-1].d);
+    o.xMid=this.fmtDate(daily[Math.floor((n-1)/2)].d);
+    o.peakLeads=this.fmt(Math.max(...leads,0));
+    o.peakConv=hasConv?Math.max(...conv.filter(v=>v!=null)).toFixed(1)+'%':'—';
+    return o;
+  }
   pts(arr,W,H,P){
     if(!arr.length)return'';
     const a=arr.length===1?[arr[0],arr[0]]:arr;const max=Math.max(...a,1);
@@ -1123,15 +1386,18 @@ class Component extends DCLogic {
     return 'M'+P+','+(H-P)+' L'+p.split(' ').join(' L')+' L'+(W-P)+','+(H-P)+' Z';
   }
   // Contractual target strip. actualPct is null until the campaign-level tracker is wired.
-  targetVals(f){
+  // measured: leads over records touched, from Call Details. Null until
+  // attempts.csv covers the range; a dash is honest, a zero would not be.
+  targetVals(f,measured){
     const t=f&&f.target;
     if(!t||t.pct==null)return{actual:'—',note:'NO TARGET SET',barW:'0%',
       source:'No contractual target recorded for this client.'};
-    if(t.actualPct==null)return{actual:'—',note:'TARGET '+t.pct.toFixed(1)+'%',barW:'0%',
-      source:'Campaign-level tracker not yet wired — measures all 3 guaranteed dial passes, not a daily rate.'};
-    return{actual:t.actualPct.toFixed(1)+'%',note:'OF '+t.pct.toFixed(1)+'% TARGET',
-      barW:Math.max(2,Math.min(100,Math.round(t.actualPct/t.pct*100)))+'%',
-      source:'Measured across all 3 guaranteed dial passes.'};
+    const pct=measured!=null?measured:t.actualPct;
+    if(pct==null)return{actual:'—',note:'TARGET '+t.pct.toFixed(1)+'%',barW:'0%',
+      source:'Awaiting attempts data — ingest Call Details for this range.'};
+    return{actual:pct.toFixed(1)+'%',note:'OF '+t.pct.toFixed(1)+'% TARGET',
+      barW:Math.max(2,Math.min(100,Math.round(pct/t.pct*100)))+'%',
+      source:'Leads over records touched, across every dial pass in this range.'};
   }
 
   panel(cid){
@@ -1149,9 +1415,15 @@ class Component extends DCLogic {
       marqueeVal:'—',secondVal:'—',records:'—',opps:'—'};
     const f=st.data&&st.data[cid];if(!f)return base;
     base.convLabel=f.convLabel||'CONVERSION';base.statLabel=f.statLabel||'INTERNAL';base.segNote=f.note||'';
-    const tv=this.targetVals(f);
-    base.targetActual=tv.actual;base.targetNote=tv.note;base.targetBarW=tv.barW;
     const a=this.agg(cid,range,seg,null,null);
+    // 3-pass list conversion, finally measurable: records touched is pass-1
+    // dials, so leads over records is exactly what the contract counts.
+    const pRec=(a.att.get(1)||{calls:0}).calls;
+    const pv=[...a.att.values()];
+    const pLeads=pv.some(v=>v.leads!=null)?pv.reduce((s,v)=>s+(v.leads||0),0):null;
+    const tv=this.targetVals(f,(pRec&&pLeads!=null)?(pLeads/pRec*100):null);
+    base.targetActual=tv.actual;base.targetNote=tv.note;base.targetBarW=tv.barW;
+
     if(a.rows){base.calls=this.fmt(a.calls);base.leads=this.fmt(a.leads);
       base.contacts=f.convContactsDenom==='calls'?'—':this.fmt(a.contacts);}
     base.quotes=a.denom?this.fmt(a.denom):'—';
@@ -1237,7 +1509,51 @@ class Component extends DCLogic {
     const cd=this.convDialed(f,a);
     ex.hasDialed=cd!=null;ex.convDialed=this.pct(cd);
     ex.dialed=a.denom?this.fmt(a.denom):'—';
-    const tv=this.targetVals(f);
+    /* Dial-pass breakdown. Records touched = calls at pass 1, so 3-pass list
+       conversion is leads over records — the very figure the contractual target
+       measures, which until now had no source and read as a dash. */
+    const att=[...a.att.entries()].sort((p,q)=>p[0]-q[0]);
+    const rec=(a.att.get(1)||{calls:0}).calls;
+    const attCalls=att.reduce((s,[,v])=>s+v.calls,0);
+    const knownLeads=att.some(([,v])=>v.leads!=null);
+    const attLeads=knownLeads?att.reduce((s,[,v])=>s+(v.leads||0),0):null;
+    const maxAttCalls=Math.max(...att.map(([,v])=>v.calls),1);
+    ex.hasAtt=att.length>0&&rec>0;ex.noAtt=!ex.hasAtt;
+    const _=maxAttCalls;
+    ex.attRecords=rec?this.fmt(rec):'—';
+    ex.attAvg=rec?(attCalls/rec).toFixed(2):'—';
+    ex.attCalls=attCalls?this.fmt(attCalls):'—';
+    ex.attLeads=attLeads==null?'—':this.fmt(attLeads);
+    ex.attConv=(rec&&attLeads!=null)?(attLeads/rec*100).toFixed(1)+'%':'—';
+    ex.attNoLeads=!knownLeads;
+    ex.attNote=knownLeads
+      ?'Records touched are pass-1 dials. Passes come from Call Details column H; leads per pass from the nightly status list.'
+      :'Records touched are pass-1 dials, from Call Details column H. Leads per pass are only written by the nightly run, so they read as dashes for backfilled days.';
+    ex.attRows=att.map(([n,v])=>({
+      label:n>=10?'10+':('PASS '+n),
+      calls:this.fmt(v.calls),
+      leads:v.leads==null?'—':this.fmt(v.leads),
+      conv:(v.leads!=null&&v.calls)?(v.leads/v.calls*100).toFixed(2)+'%':'—',
+      reach:rec?Math.round(v.calls/rec*100)+'%':'—',
+      barW:Math.max(1,Math.round(v.calls/maxAttCalls*100))+'%',
+      leadShare:(v.leads!=null&&attLeads)?Math.round(v.leads/attLeads*100)+'%':'—'}));
+    // Per campaign, so it is visible which segment is carrying the extra passes.
+    ex.attSegRows=[...a.attSeg.entries()].map(([sid,m])=>{
+      const rows=[...m.entries()];
+      const r1=(m.get(1)||{calls:0}).calls;
+      const c=rows.reduce((s,[,v])=>s+v.calls,0);
+      const kl=rows.some(([,v])=>v.leads!=null);
+      const l=kl?rows.reduce((s,[,v])=>s+(v.leads||0),0):null;
+      return {name:this.segName(f,sid).toUpperCase(),
+        records:r1?this.fmt(r1):'—',
+        avg:r1?(c/r1).toFixed(2):'—',
+        calls:this.fmt(c),leads:l==null?'—':this.fmt(l),
+        conv:(r1&&l!=null)?(l/r1*100).toFixed(2)+'%':'—',
+        deep:r1?Math.round(rows.filter(([n])=>n>=3).reduce((s,[,v])=>s+v.calls,0)/r1*100)+'%':'—',
+        _s:l||0};
+    }).sort((x,y)=>y._s-x._s);
+    ex.hasAttSegs=ex.attSegRows.length>0;
+    const tv=this.targetVals(f,(rec&&attLeads)?(attLeads/rec*100):null);
     ex.targetTitle=(f.target&&f.target.label?f.target.label:'CONTRACTUAL TARGET').toUpperCase();
     ex.targetActual=tv.actual;ex.targetNote=tv.note;ex.targetBarW=tv.barW;ex.targetSource=tv.source;
     ex.hasStl=a.stlC>0;
@@ -1256,13 +1572,14 @@ class Component extends DCLogic {
     if(hasHeat)tabs.push(['heat','HEATMAP']);
     if(isSE)tabs.push(['camps','BRANCHES']);
     else if(segList.length>1)tabs.push(['camps','CAMPAIGNS']);
+    tabs.push(['att','ATTEMPTS']);
     tabs.push(['mix','APPT MIX']);
     const cur=tabs.some(t=>t[0]===this.state.tab)?this.state.tab:'overview';
     ex.tabs=tabs.map(([k,label])=>({label,go:()=>this.setState({tab:k}),
       bg:k===cur?cfg.accent:'transparent',ink:k===cur?(cfg.dark?'#0E1B2C':'#FFFFFF'):cfg.sub,
       bd:k===cur?cfg.accent:(cfg.dark?'rgba(255,255,255,.25)':'rgba(15,25,60,.18)')}));
     ex.tabOverview=cur==='overview';ex.tabReps=cur==='reps';ex.tabTrend=cur==='trend';ex.tabHeat=cur==='heat';ex.tabCamps=cur==='camps';
-    ex.tabMix=cur==='mix';
+    ex.tabMix=cur==='mix';ex.tabAtt=cur==='att';
     // Share of leads by call status, per campaign. Structure now, counts once the
     // Appointment Report's status column is carried through ingestion.
     ex.mixCols=['SALES','SERVICE','TUNE-UP','MEMBERSHIP','TRANSFER','OTHER'];
@@ -1271,19 +1588,7 @@ class Component extends DCLogic {
     });
     ex.campsLabelUpper=isSE?'BRANCH':'CAMPAIGN';
     const daily=[...a.daily.values()].sort((x,y)=>x.d<y.d?-1:1);
-    const W=800,H=240,P=16;const lv=daily.map(v=>v.leads),cv=daily.map(v=>v.calls);
-    ex.leadsPts=this.pts(lv,W,H,P);ex.callsPts=this.pts(cv,W,H,P);ex.areaPath=this.area(lv,W,H,P);
-    ex.hasTrend=daily.length>1;ex.noTrend=daily.length<2;
-    ex.trendNote=daily.length===1?('Only one day of data in this range · '+this.fmtDate(daily[0].d)):'No data in this range';
-    ex.x0=daily.length?this.fmtDate(daily[0].d):'';ex.x1=daily.length?this.fmtDate(daily[daily.length-1].d):'';
-    ex.maxLeads=daily.length?this.fmt(Math.max(...lv,0)):'—';ex.maxCalls=daily.length?this.fmt(Math.max(...cv,0)):'—';
-    ex.dots=[];
-    if(lv.length>=2&&lv.length<=32){
-      const mx=Math.max(...lv,1);
-      ex.dots=lv.map((v,i)=>({
-        d:'M'+(P+i*(W-2*P)/(lv.length-1)).toFixed(1)+','+(H-P-(v/mx)*(H-2*P)).toFixed(1)+' l0,0.001',
-        delay:(0.15+i*(0.75/lv.length)).toFixed(2)+'s'}));
-    }
+    Object.assign(ex,this.buildChart(daily,cfg));
     const reps=[...a.reps.values()].sort((x,y)=>y.leads-x.leads);
     const maxL=Math.max(...reps.map(r=>r.leads),1);
     ex.reps=reps.slice(0,16).map((r,i)=>{
