@@ -805,6 +805,30 @@ class Component extends DCLogic {
   }
   cacheHas(c,bucket){return !!(c&&c[bucket]&&Object.keys(c[bucket]).length)}
   applyCache(all,c){
+    // The cache now lands on top of real CSV rows, so anything it covers must
+    // REPLACE its published counterpart. Pushing alone would count a day twice.
+    const claimed={};
+    for(const r of Object.values(c.daily||{})){
+      const f=all[(r.client||'').toLowerCase()];if(!f||!r.d)continue;
+      const key=(r.client||'').toLowerCase()+'|'+r.d+'|'+this.segId(f,r.seg);
+      claimed[key]=1;
+    }
+    for(const k in all){
+      const f=all[k];
+      f.daily=f.daily.filter(row=>!claimed[k+'|'+row.d+'|'+row.seg]);
+    }
+    const repClaimed={};
+    for(const r of Object.values(c.reps||{})){
+      if(!r.d||!r.rep||r.dEnd&&r.dEnd>r.d)continue;
+      const f=all[(r.client||'').toLowerCase()];if(!f)continue;
+      repClaimed[(r.client||'').toLowerCase()+'|'+r.d+'|'+this.segId(f,r.seg)]=1;
+    }
+    // Rep rows live on f.detail (an array), keyed by date and segment.
+    for(const k in all){
+      for(const row of all[k].detail||[]){
+        if(row.reps&&row.reps.length&&repClaimed[k+'|'+row.d+'|'+row.seg])row.reps=[];
+      }
+    }
     for(const r of Object.values(c.daily||{})){
       const f=all[(r.client||'').toLowerCase()];if(!f||!r.d)continue;
       f.daily.push({d:r.d,seg:this.segId(f,r.seg),
@@ -844,14 +868,28 @@ class Component extends DCLogic {
       fetch('data/reps.csv').then(r=>r.ok?r.text():'').catch(()=>''),
       fetch('data/branches.csv').then(r=>r.ok?r.text():'').catch(()=>'')])
       .then(([cfg,csv,hourly,reps,branches])=>{
-        // Tonight's ingest wins per bucket; the committed CSVs are the fallback (and what a TV loads).
+        // The committed CSVs are the base for every bucket, and a local ingest
+        // overlays them per row. Suppressing a whole bucket because the cache
+        // held anything meant one stale hand-ingest hid every nightly commit
+        // that came after it.
         const cache=this.readCache();
-        const all=this.buildFromCsv(cfg,this.cacheHas(cache,'daily')?'':csv);
-        if(!this.cacheHas(cache,'hourly'))this.buildHourly(all,hourly);
-        if(!this.cacheHas(cache,'reps'))this.buildReps(all,reps);
-        if(!this.cacheHas(cache,'branches'))this.buildBranches(all,branches);
+        const all=this.buildFromCsv(cfg,csv);
+        this.buildHourly(all,hourly);
+        this.buildReps(all,reps);
+        this.buildBranches(all,branches);
         if(cache)this.applyCache(all,cache);
-        this._live=this.cacheHas(cache,'daily');
+        // "from your last ingest" only when the cache is genuinely ahead of the
+        // published data, so the label never claims credit for a nightly run.
+        this._live=false;
+        if(this.cacheHas(cache,'daily')){
+          let cMax='',fMax='';
+          for(const r of Object.values(cache.daily||{}))if(r.d>cMax)cMax=r.d;
+          for(const l of String(csv||'').split(/\r?\n/).slice(1)){
+            const d=l.split(',')[0];
+            if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d>fMax)fMax=d;
+          }
+          this._live=cMax>fMax;
+        }
         let mx='';
         for(const k in all)for(const r of all[k].daily)if((r.calls||r.leads)&&r.d>mx)mx=r.d;
         this._hasData=!!mx;
